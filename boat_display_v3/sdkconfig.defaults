@@ -1,0 +1,48 @@
+# ─── Flash & PSRAM ───────────────────────────────────────────
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_BOOT_INIT=y
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# ─── BSP options ─────────────────────────────────────────────
+CONFIG_BSP_I2C_NUM=1
+CONFIG_BSP_I2C_CLK_SPEED_HZ=400000
+CONFIG_BSP_I2S_NUM=0
+
+CONFIG_BSP_SPIFFS_MOUNT_POINT="/spiffs"
+CONFIG_BSP_SPIFFS_PARTITION_LABEL="storage"
+CONFIG_BSP_SPIFFS_MAX_FILES=5
+
+# LVGL display buffer height (lines). 50 is a good balance.
+CONFIG_BSP_DISPLAY_LVGL_BUF_HEIGHT=50
+
+# Number of RGB frame buffers in PSRAM (1 = less RAM, 2 = tear-free)
+CONFIG_BSP_LCD_RGB_BUFFER_NUMS=2
+
+# Bounce buffer mode — required when PSRAM frame buffer is used
+CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_MODE=y
+CONFIG_BSP_LCD_RGB_BOUNCE_BUFFER_HEIGHT=10
+
+# Use PSRAM for LVGL buffer
+CONFIG_BSP_DISPLAY_LVGL_PSRAM=y
+
+# Avoid tearing with double-buffer
+CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR=y
+
+# ─── FreeRTOS ────────────────────────────────────────────────
+CONFIG_FREERTOS_HZ=1000
+CONFIG_FREERTOS_UNICORE=n
+
+# ─── Networking ──────────────────────────────────────────────
+CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=10
+CONFIG_ESP_WIFI_DYNAMIC_RX_BUFFER_NUM=32
+CONFIG_ESP_WIFI_TX_BUFFER_TYPE_DYNAMIC=y
+
+# WebSocket client
+CONFIG_WS_TRANSPORT_MAX_CONTROL_FRAME_BUFFER_LEN=128
+CONFIG_WEBSOCKET_CLIENT_BUFFER_SIZE=4096
+
+# ─── Logging ─────────────────────────────────────────────────
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y

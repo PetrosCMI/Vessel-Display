@@ -1,0 +1,7 @@
+dependencies:
+  idf: ">=5.1.0"
+  
+  # The BSP in /components handles LVGL, LCD, and Touch.
+  # We only add what's NOT in the BSP:
+  espressif/esp_websocket_client: "^1.2.0"
+  espressif/esp-idf-cxx: "*"
