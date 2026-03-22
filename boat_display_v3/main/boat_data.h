@@ -24,6 +24,7 @@ struct BoatData {
 
     // Wind (SI: m/s, degrees)
     float aws_ms       = NAN;   // Apparent wind speed (m/s)
+    float aws_max_ms   = NAN;   // session max AWS (reset by user)
     float awa_deg      = NAN;   // Apparent wind angle (°, signed ±180)
     float tws_ms       = NAN;   // True wind speed (m/s)
     float twa_deg      = NAN;   // True wind angle (°, signed ±180)
@@ -31,15 +32,26 @@ struct BoatData {
 
     // Depth / environment
     float depth_m      = NAN;
+    float depth_max_m  = NAN;   // session max depth (reset by user)
+    float depth_min_m  = NAN;   // session min depth (reset by user)
     float water_temp_c = NAN;
     float air_temp_c   = NAN;
 
     // Engine / electrical
     float rpm          = NAN;
-    float battery_v    = NAN;
-    float start_v      = NAN;
-    float coolant_temp = NAN;   // °C
-    float oil_pressure = NAN;   // kPa
+    float battery_v    = NAN;   // legacy
+    float start_v      = NAN;   // legacy
+
+    // Battery banks
+    float house_v      = NAN;
+    float house_a_all  = NAN;   // house total current
+    float house_a_li   = NAN;   // house LI current
+    float start_batt_v = NAN;
+    float start_batt_a = NAN;
+    float forward_v    = NAN;
+
+    float coolant_temp = NAN;
+    float oil_pressure = NAN;
 
     // Meta
     uint32_t last_update_ms    = 0;
@@ -64,6 +76,23 @@ inline void boatSet(float& field, float value) {
     if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
         field = value;
         gBoat.last_update_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+        xSemaphoreGive(gBoatMutex);
+    }
+}
+
+// Reset depth min/max accumulators
+inline void boatResetDepthMinMax() {
+    if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+        gBoat.depth_max_m = NAN;
+        gBoat.depth_min_m = NAN;
+        xSemaphoreGive(gBoatMutex);
+    }
+}
+
+// Reset wind max accumulator
+inline void boatResetWindMax() {
+    if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
+        gBoat.aws_max_ms = NAN;
         xSemaphoreGive(gBoatMutex);
     }
 }

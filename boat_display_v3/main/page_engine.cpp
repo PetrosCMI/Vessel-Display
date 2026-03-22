@@ -1,32 +1,24 @@
-// page_engine.cpp — Engine & electrical page
+// page_engine.cpp ΓÇö Engine page
 #include "page_registry.h"
 #include "ui.h"
 #include "boat_data.h"
 #include "units.h"
 #include "lvgl.h"
 
-static InstrCard eng_rpm, eng_coolant, eng_oil, eng_batt, eng_alt;
+static InstrCard eng_rpm, eng_coolant, eng_oil;
 
 static void build(lv_obj_t* tab) {
     eng_rpm = make_instr_card(tab, "ENGINE RPM", "rpm", true);
-    lv_obj_set_size(eng_rpm.card, 454, 120);
+    lv_obj_set_size(eng_rpm.card, 454, 160);
     lv_obj_set_pos(eng_rpm.card, 0, 0);
 
     eng_coolant = make_instr_card(tab, "COOLANT", "\xc2\xb0""C", false);
-    lv_obj_set_size(eng_coolant.card, 148, 110);
-    lv_obj_set_pos(eng_coolant.card, 0, 130);
+    lv_obj_set_size(eng_coolant.card, 222, 180);
+    lv_obj_set_pos(eng_coolant.card, 0, 170);
 
-    eng_oil = make_instr_card(tab, "OIL", "kPa", false);
-    lv_obj_set_size(eng_oil.card, 148, 110);
-    lv_obj_set_pos(eng_oil.card, 156, 130);
-
-    eng_batt = make_instr_card(tab, "HOUSE V", "V", false);
-    lv_obj_set_size(eng_batt.card, 148, 110);
-    lv_obj_set_pos(eng_batt.card, 0, 250);
-
-    eng_alt = make_instr_card(tab, "START V", "V", false);
-    lv_obj_set_size(eng_alt.card, 148, 110);
-    lv_obj_set_pos(eng_alt.card, 156, 250);
+    eng_oil = make_instr_card(tab, "OIL PRESSURE", "kPa", false);
+    lv_obj_set_size(eng_oil.card, 222, 180);
+    lv_obj_set_pos(eng_oil.card, 232, 170);
 }
 
 static void update(void) {
@@ -44,16 +36,6 @@ static void update(void) {
     const char* pu = fmt_pressure(d.oil_pressure, buf, sizeof(buf));
     instr_card_set(eng_oil, buf, pu,
         d.oil_pressure < 200.0f, d.oil_pressure < 150.0f);
-
-    fmt_volts(d.battery_v, buf, sizeof(buf));
-    instr_card_set(eng_batt, buf, "V",
-        d.battery_v < 12.2f || d.battery_v > 14.8f,
-        d.battery_v < 11.8f);
-
-    fmt_volts(d.start_v, buf, sizeof(buf));
-    instr_card_set(eng_alt, buf, "V",
-        d.start_v < 12.2f || d.start_v > 14.8f,
-        d.start_v < 11.8f);
 }
 
 static struct EngReg {

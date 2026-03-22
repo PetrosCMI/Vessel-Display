@@ -4,6 +4,13 @@
 void ui_init(void);
 void ui_update(void);
 
+// Navigate to a page by tab label (e.g. "DEPTH", "WIND")
+// Safe to call from any task — uses lv_async_call internally
+void ui_navigate_to_page(const char* page_label);
+
+// Wake display and navigate — call from alarm_tick()
+void ui_alarm_wake(const char* page_label);
+
 // ── Shared styles (defined in ui.cpp) ────────────────────────
 extern lv_style_t g_style_screen;
 extern lv_style_t g_style_card;
@@ -41,3 +48,6 @@ InstrCard make_instr_card(lv_obj_t* parent, const char* name,
 void instr_card_set(InstrCard& ic, const char* val_str,
                     const char* unit_str,
                     bool warn = false, bool alert = false);
+
+// Make obj and its direct children bubble scroll events to parent
+void ui_make_scroll_transparent(lv_obj_t* obj);

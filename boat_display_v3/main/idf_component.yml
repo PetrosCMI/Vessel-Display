@@ -2,6 +2,10 @@ dependencies:
   idf: ">=5.1.0"
   
   # The BSP in /components handles LVGL, LCD, and Touch.
-  # We only add what's NOT in the BSP:
+  # These are your application-specific needs:
   espressif/esp_websocket_client: "^1.2.0"
-  espressif/esp-idf-cxx: "*"
+  
+  # Explicitly allow the beta version of the C++ components
+  espressif/esp-idf-cxx: 
+    version: "^1.0.0-beta"
+    pre_release: true

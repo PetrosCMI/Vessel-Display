@@ -1,4 +1,4 @@
-// page_nav.cpp — Navigation page
+// page_nav.cpp ΓÇö Navigation page
 #include "page_registry.h"
 #include "ui.h"
 #include "boat_data.h"
@@ -6,65 +6,38 @@
 #include "lvgl.h"
 #include <math.h>
 
-static InstrCard nav_sog, nav_stw, nav_lat, nav_lon;
-static lv_obj_t* nav_compass_arc;
-static lv_obj_t* nav_hdg_lbl;
-static lv_obj_t* nav_cog_lbl;
+// -- Layout ----------------------------------------------------
+//
+//  Row 0 (h=126): [ SOG        ] [ STW        ]
+//  Row 1 (h=126): [ HDG        ] [ COG        ]
+//  Row 2 (h=110): [ LAT        ] [ LON        ]
 
-static void build_compass(lv_obj_t* parent, int x, int y, int sz) {
-    lv_obj_t* c = lv_obj_create(parent);
-    lv_obj_add_style(c, &g_style_card, 0);
-    lv_obj_set_size(c, sz, sz);
-    lv_obj_set_pos(c, x, y);
-    lv_obj_set_scrollbar_mode(c, LV_SCROLLBAR_MODE_OFF);
-
-    lv_obj_t* title = lv_label_create(c);
-    lv_label_set_text(title, "HDG");
-    lv_obj_add_style(title, &g_style_label, 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 2);
-
-    nav_compass_arc = lv_arc_create(c);
-    lv_arc_set_range(nav_compass_arc, 0, 359);
-    lv_arc_set_value(nav_compass_arc, 0);
-    lv_arc_set_bg_angles(nav_compass_arc, 0, 360);
-    lv_obj_set_size(nav_compass_arc, sz - 32, sz - 32);
-    lv_obj_center(nav_compass_arc);
-    lv_obj_set_style_arc_color(nav_compass_arc, C_BORDER, LV_PART_MAIN);
-    lv_obj_set_style_arc_color(nav_compass_arc, C_ACCENT, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_width(nav_compass_arc, 5, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(nav_compass_arc, 5, LV_PART_INDICATOR);
-    lv_obj_remove_style(nav_compass_arc, NULL, LV_PART_KNOB);
-    lv_obj_clear_flag(nav_compass_arc, LV_OBJ_FLAG_CLICKABLE);
-
-    nav_hdg_lbl = lv_label_create(c);
-    lv_label_set_text(nav_hdg_lbl, "---\xc2\xb0");
-    lv_obj_add_style(nav_hdg_lbl, &g_style_val_medium, 0);
-    lv_obj_align(nav_hdg_lbl, LV_ALIGN_CENTER, 0, -6);
-
-    nav_cog_lbl = lv_label_create(c);
-    lv_label_set_text(nav_cog_lbl, "COG ---\xc2\xb0");
-    lv_obj_add_style(nav_cog_lbl, &g_style_label, 0);
-    lv_obj_align(nav_cog_lbl, LV_ALIGN_BOTTOM_MID, 0, -4);
-}
+static InstrCard nav_sog, nav_stw, nav_hdg, nav_cog, nav_lat, nav_lon;
 
 static void build(lv_obj_t* tab) {
-    build_compass(tab, 0, 0, 220);
-
     nav_sog = make_instr_card(tab, "SOG", "kts", true);
-    lv_obj_set_size(nav_sog.card, 226, 100);
-    lv_obj_set_pos(nav_sog.card, 228, 0);
+    lv_obj_set_size(nav_sog.card, 224, 126);
+    lv_obj_set_pos(nav_sog.card, 0, 0);
 
     nav_stw = make_instr_card(tab, "STW", "kts", true);
-    lv_obj_set_size(nav_stw.card, 226, 100);
-    lv_obj_set_pos(nav_stw.card, 228, 108);
+    lv_obj_set_size(nav_stw.card, 224, 126);
+    lv_obj_set_pos(nav_stw.card, 230, 0);
+
+    nav_hdg = make_instr_card(tab, "HDG", "\xc2\xb0""T", true);
+    lv_obj_set_size(nav_hdg.card, 224, 126);
+    lv_obj_set_pos(nav_hdg.card, 0, 132);
+
+    nav_cog = make_instr_card(tab, "COG", "\xc2\xb0""T", true);
+    lv_obj_set_size(nav_cog.card, 224, 126);
+    lv_obj_set_pos(nav_cog.card, 230, 132);
 
     nav_lat = make_instr_card(tab, "LAT", "", false);
-    lv_obj_set_size(nav_lat.card, 226, 100);
-    lv_obj_set_pos(nav_lat.card, 0, 228);
+    lv_obj_set_size(nav_lat.card, 224, 106);
+    lv_obj_set_pos(nav_lat.card, 0, 264);
 
     nav_lon = make_instr_card(tab, "LON", "", false);
-    lv_obj_set_size(nav_lon.card, 226, 100);
-    lv_obj_set_pos(nav_lon.card, 228, 228);
+    lv_obj_set_size(nav_lon.card, 224, 106);
+    lv_obj_set_pos(nav_lon.card, 230, 264);
 }
 
 static void fmt_coord(float v, bool is_lat, char* buf, size_t len) {
@@ -72,7 +45,7 @@ static void fmt_coord(float v, bool is_lat, char* buf, size_t len) {
     int   deg = (int)fabsf(v);
     float mn  = (fabsf(v) - deg) * 60.0f;
     char  hem = is_lat ? (v >= 0 ? 'N' : 'S') : (v >= 0 ? 'E' : 'W');
-    snprintf(buf, len, "%d\xc2\xb0 %.3f' %c", deg, mn, hem);
+    snprintf(buf, len, "%d\xc2\xb0%.3f'%c", deg, mn, hem);
 }
 
 static void update(void) {
@@ -86,13 +59,17 @@ static void update(void) {
     instr_card_set(nav_stw, buf, su);
 
     if (!isnan(d.heading_deg)) {
-        lv_arc_set_value(nav_compass_arc, (int)d.heading_deg);
-        snprintf(buf, sizeof(buf), "%.0f\xc2\xb0", d.heading_deg);
-        lv_label_set_text(nav_hdg_lbl, buf);
+        snprintf(buf, sizeof(buf), "%.0f", d.heading_deg);
+        instr_card_set(nav_hdg, buf, "\xc2\xb0""T");
+    } else {
+        instr_card_set(nav_hdg, "---", "\xc2\xb0""T");
     }
+
     if (!isnan(d.cog_deg)) {
-        snprintf(buf, sizeof(buf), "COG %.0f\xc2\xb0", d.cog_deg);
-        lv_label_set_text(nav_cog_lbl, buf);
+        snprintf(buf, sizeof(buf), "%.0f", d.cog_deg);
+        instr_card_set(nav_cog, buf, "\xc2\xb0""T");
+    } else {
+        instr_card_set(nav_cog, "---", "\xc2\xb0""T");
     }
 
     fmt_coord(d.lat, true,  buf, sizeof(buf));

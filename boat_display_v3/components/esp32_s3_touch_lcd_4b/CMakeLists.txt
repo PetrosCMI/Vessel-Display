@@ -1,7 +1,8 @@
 idf_component_register(
-    SRCS "esp32_s3_touch_lcd_4b.c" ${SRC_VER}
-    INCLUDE_DIRS "include" "include/bsp"
+    SRCS "esp32_s3_touch_lcd_4b.c"
+    INCLUDE_DIRS "include"
     PRIV_INCLUDE_DIRS "priv_include"
-    REQUIRES esp_driver_i2c  esp_driver_gpio esp_lcd
-    PRIV_REQUIRES esp_timer spiffs esp_psram fatfs
+    # Changed 'esp_driver_i2c' and 'esp_driver_gpio' to 'driver'
+    REQUIRES driver esp_lcd
+    PRIV_REQUIRES esp_timer spiffs fatfs
 )

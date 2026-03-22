@@ -1,0 +1,23 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+.clang_complete
+.gcc-flags.json
+/lib/README
+
+# ESP-IDF
+sdkconfig
+sdkconfig.old
+build/
+managed_components/
+dependencies.lock
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db

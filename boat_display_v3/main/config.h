@@ -4,10 +4,10 @@
 //  USER CONFIGURATION  — edit these values
 // ─────────────────────────────────────────────
 
-#define WIFI_SSID        "YourBoatSSID"
-#define WIFI_PASSWORD    "YourPassword"
+#define WIFI_SSID        ""
+#define WIFI_PASSWORD    ""
 
-#define SIGNALK_HOST     "192.168.1.100"   // IP or hostname of SignalK server
+#define SIGNALK_HOST     "10.12.0.113"   // IP or hostname of SignalK server
 #define SIGNALK_PORT     3000
 
 // Initial display brightness (0–100 %)
