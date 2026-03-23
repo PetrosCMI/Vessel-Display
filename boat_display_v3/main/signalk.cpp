@@ -1,4 +1,5 @@
 #include "signalk.h"
+#include "signalk_paths.h"
 #include "boat_data.h"
 #include "settings.h"
 #include "esp_websocket_client.h"
@@ -40,22 +41,22 @@ static void parse_delta(const char* data, int len) {
             if (!path) continue;
             cJSON* value = cJSON_GetObjectItem(val, "value");
 
-            if (strcmp(path, "navigation.speedOverGround") == 0)
+            if (strcmp(path, SK_SOG) == 0)
                 boatSet(gBoat.sog_ms, (float)value->valuedouble);
-            else if (strcmp(path, "navigation.speedThroughWater") == 0)
+            else if (strcmp(path, SK_STW) == 0)
                 boatSet(gBoat.stw_ms, (float)value->valuedouble);
-            else if (strcmp(path, "navigation.courseOverGroundTrue") == 0)
+            else if (strcmp(path, SK_COG) == 0)
                 boatSet(gBoat.cog_deg, rad2deg((float)value->valuedouble));
-            else if (strcmp(path, "navigation.headingTrue") == 0)
+            else if (strcmp(path, SK_HDG_TRUE) == 0)
                 boatSet(gBoat.heading_deg, rad2deg((float)value->valuedouble));
-            else if (strcmp(path, "navigation.headingMagnetic") == 0) {
+            else if (strcmp(path, SK_HDG_MAG) == 0) {
                 if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
                     if (isnan(gBoat.heading_deg))
                         gBoat.heading_deg = rad2deg((float)value->valuedouble);
                     xSemaphoreGive(gBoatMutex);
                 }
             }
-            else if (strcmp(path, "navigation.position") == 0) {
+            else if (strcmp(path, SK_POSITION) == 0) {
                 cJSON* lat = cJSON_GetObjectItem(value, "latitude");
                 cJSON* lon = cJSON_GetObjectItem(value, "longitude");
                 if (cJSON_IsNumber(lat) && cJSON_IsNumber(lon)) {
@@ -67,7 +68,7 @@ static void parse_delta(const char* data, int len) {
                     }
                 }
             }
-            else if (strcmp(path, "environment.wind.speedApparent") == 0) {
+            else if (strcmp(path, SK_AWS) == 0) {
                 float aws = (float)value->valuedouble;
                 if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
                     gBoat.aws_ms = aws;
@@ -77,15 +78,15 @@ static void parse_delta(const char* data, int len) {
                     xSemaphoreGive(gBoatMutex);
                 }
             }
-            else if (strcmp(path, "environment.wind.angleApparent") == 0)
+            else if (strcmp(path, SK_AWA) == 0)
                 boatSet(gBoat.awa_deg, rad2deg((float)value->valuedouble));
-            else if (strcmp(path, "environment.wind.speedTrue") == 0)
+            else if (strcmp(path, SK_TWS) == 0)
                 boatSet(gBoat.tws_ms, (float)value->valuedouble);
-            else if (strcmp(path, "environment.wind.angleTrueWater") == 0)
+            else if (strcmp(path, SK_TWA) == 0)
                 boatSet(gBoat.twa_deg, rad2deg((float)value->valuedouble));
-            else if (strcmp(path, "environment.wind.directionTrue") == 0)
+            else if (strcmp(path, SK_TWD) == 0)
                 boatSet(gBoat.twd_deg, rad2deg((float)value->valuedouble));
-            else if (strcmp(path, "environment.depth.belowTransducer") == 0) {
+            else if (strcmp(path, SK_DEPTH) == 0) {
                 float depth = (float)value->valuedouble;
                 if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
                     gBoat.depth_m = depth;
@@ -97,27 +98,27 @@ static void parse_delta(const char* data, int len) {
                     xSemaphoreGive(gBoatMutex);
                 }
             }
-            else if (strcmp(path, "environment.water.temperature") == 0)
+            else if (strcmp(path, SK_WATER_TEMP) == 0)
                 boatSet(gBoat.water_temp_c, K2C((float)value->valuedouble));
-            else if (strcmp(path, "environment.outside.temperature") == 0)
+            else if (strcmp(path, SK_AIR_TEMP) == 0)
                 boatSet(gBoat.air_temp_c, K2C((float)value->valuedouble));
-            else if (strcmp(path, "propulsion.main.revolutions") == 0)
+            else if (strcmp(path, SK_RPM) == 0)
                 boatSet(gBoat.rpm, (float)value->valuedouble * 60.0f);
-            else if (strcmp(path, "propulsion.main.temperature") == 0)
+            else if (strcmp(path, SK_COOLANT_TEMP) == 0)
                 boatSet(gBoat.coolant_temp, K2C((float)value->valuedouble));
-            else if (strcmp(path, "propulsion.main.oilPressure") == 0)
+            else if (strcmp(path, SK_OIL_PRESSURE) == 0)
                 boatSet(gBoat.oil_pressure, (float)value->valuedouble / 1000.0f);
-            else if (strcmp(path, "electrical.batteries.house.voltage") == 0)
+            else if (strcmp(path, SK_BATT_HOUSE_V) == 0)
                 boatSet(gBoat.house_v, (float)value->valuedouble);
-            else if (strcmp(path, "electrical.batteries.house.all.current") == 0)
+            else if (strcmp(path, SK_BATT_HOUSE_A_ALL) == 0)
                 boatSet(gBoat.house_a_all, (float)value->valuedouble);
-            else if (strcmp(path, "electrical.batteries.house.li.current") == 0)
+            else if (strcmp(path, SK_BATT_HOUSE_A_LI) == 0)
                 boatSet(gBoat.house_a_li, (float)value->valuedouble);
-            else if (strcmp(path, "electrical.batteries.start.voltage") == 0)
+            else if (strcmp(path, SK_BATT_START_V) == 0)
                 boatSet(gBoat.start_batt_v, (float)value->valuedouble);
-            else if (strcmp(path, "electrical.batteries.start.current") == 0)
+            else if (strcmp(path, SK_BATT_START_A) == 0)
                 boatSet(gBoat.start_batt_a, (float)value->valuedouble);
-            else if (strcmp(path, "electrical.batteries.forward.voltage") == 0)
+            else if (strcmp(path, SK_BATT_FWD_V) == 0)
                 boatSet(gBoat.forward_v, (float)value->valuedouble);
         }
     }
