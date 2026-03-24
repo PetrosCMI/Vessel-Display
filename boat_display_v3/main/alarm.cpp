@@ -12,11 +12,11 @@
 
 static const char* TAG = "Alarm";
 
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  Tone synthesis via esp_codec_dev
-//  The ES8311 is a proper audio codec — we write
+//  The ES8311 is a proper audio codec ΓÇö we write
 //  PCM samples to it via esp_codec_dev_write().
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 #define SAMPLE_RATE     22050
 #define BYTES_PER_FRAME 2       // 16-bit mono
 
@@ -26,7 +26,7 @@ static esp_codec_dev_handle_t s_speaker = NULL;
 static void play_tone(uint32_t freq_hz, uint32_t duration_ms, bool force_max = false) {
     if (!s_speaker || !gSettings.audio_enabled || freq_hz == 0) return;
 
-    // Set hardware codec volume — max for alarms, user setting for UI beeps
+    // Set hardware codec volume ΓÇö max for alarms, user setting for UI beeps
     int vol = force_max ? 100 : gSettings.alarm_volume;
     esp_codec_dev_set_out_vol(s_speaker, vol);
 
@@ -65,9 +65,9 @@ static void play_silence(uint32_t duration_ms) {
     }
 }
 
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  Tone task
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 struct ToneCmd { AlarmPattern pattern; };
 static QueueHandle_t s_tone_queue = NULL;
 
@@ -83,13 +83,13 @@ static void tone_task(void* arg) {
                     play_tone(880, 150); play_silence(80); play_tone(880, 150);
                     break;
                 case AlarmPattern::BEEP_TRIPLE:
-                    // Alarm tone — always max volume
+                    // Alarm tone ΓÇö always max volume
                     play_tone(880, 120, true); play_silence(60);
                     play_tone(880, 120, true); play_silence(60);
                     play_tone(880, 120, true);
                     break;
                 case AlarmPattern::CONTINUOUS:
-                    // Alarm tone — always max volume
+                    // Alarm tone ΓÇö always max volume
                     for (int i = 0; i < 5; i++) {
                         play_tone(880, 300, true); play_silence(150);
                         play_tone(660, 200, true); play_silence(150);
@@ -105,14 +105,14 @@ static void tone_task(void* arg) {
     }
 }
 
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  Alarm state
 //  Each alarm has three states:
-//  INACTIVE → condition not met
-//  ACTIVE_UNACKED → condition met, beeping every 5s
-//  ACTIVE_ACKED → condition met, user touched screen,
+//  INACTIVE ΓåÆ condition not met
+//  ACTIVE_UNACKED ΓåÆ condition met, beeping every 5s
+//  ACTIVE_ACKED ΓåÆ condition met, user touched screen,
 //                 silent until rearm_time_s elapses
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 static bool     s_active[ALARM_COUNT]       = {};
 static bool     s_acked[ALARM_COUNT]        = {};
 static bool     s_navigated[ALARM_COUNT]    = {};  // nav done for this event
@@ -123,9 +123,9 @@ static bool     s_any_unacked               = false;
 
 #define BEEP_INTERVAL_S   5    // beep every 5s when unacked
 
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  Public API
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 void alarm_init(esp_codec_dev_handle_t speaker) {
     s_speaker = speaker;
 
@@ -138,7 +138,7 @@ void alarm_init(esp_codec_dev_handle_t speaker) {
         esp_codec_dev_open(s_speaker, &fs);
         ESP_LOGI(TAG, "Audio codec opened at %d Hz", SAMPLE_RATE);
     } else {
-        ESP_LOGW(TAG, "No speaker handle — audio disabled");
+        ESP_LOGW(TAG, "No speaker handle ΓÇö audio disabled");
     }
 
     s_tone_queue = xQueueCreate(8, sizeof(ToneCmd));
@@ -153,7 +153,7 @@ void alarm_beep(AlarmPattern pattern) {
 }
 
 void alarm_silence(void) {
-    // Hard silence — ack all, set ack time far in future to suppress re-arm
+    // Hard silence ΓÇö ack all, set ack time far in future to suppress re-arm
     uint32_t now_s = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
     for (int i = 0; i < ALARM_COUNT; i++) {
         s_acked[i]     = true;
@@ -171,7 +171,7 @@ void alarm_acknowledge(void) {
             s_acked[i]      = true;
             s_ack_time_s[i] = now_s;
             was_active      = true;
-            ESP_LOGI(TAG, "Alarm %d acknowledged — re-arm in %d min",
+            ESP_LOGI(TAG, "Alarm %d acknowledged ΓÇö re-arm in %d min",
                      i, gSettings.alarm_rearm_minutes);
         }
     }
@@ -200,7 +200,7 @@ static bool evaluate(AlarmID id, float si_value) {
                      (!isnan(hi) && si_value > hi);
 
     if (!triggered) {
-        // Condition cleared — reset ack and nav so next trigger is fresh
+        // Condition cleared ΓÇö reset ack and nav so next trigger is fresh
         if (s_active[id]) {
             s_acked[id]     = false;
             s_navigated[id] = false;
@@ -224,6 +224,32 @@ void alarm_tick(void) {
     evaluate(ALARM_BATT_START,     d.start_batt_v);
     evaluate(ALARM_BATT_FORWARD,   d.forward_v);
 
+    // Anchor drag
+    if (d.anchor_set && !isnan(d.anchor_dist_m)) {
+        gSettings.alarm_hi[ALARM_ANCHOR_DRAG] = gSettings.anchor_radius_m;
+        gSettings.alarm_lo[ALARM_ANCHOR_DRAG] = NAN;
+        evaluate(ALARM_ANCHOR_DRAG, d.anchor_dist_m);
+    } else {
+        s_active[ALARM_ANCHOR_DRAG] = false;
+    }
+
+    // Storm warning ΓÇö alarm when level > 0 and rising
+    {
+        static float s_prev_storm = NAN;
+        float sl = d.storm_level;
+        bool rising = !isnan(sl) && sl > 0 &&
+                      (isnan(s_prev_storm) || sl > s_prev_storm);
+        if (rising && gSettings.alarm_enabled[ALARM_STORM]) {
+            s_active[ALARM_STORM]  = true;
+            s_any_active           = true;
+            s_any_unacked          = !s_acked[ALARM_STORM];
+        } else if (isnan(sl) || sl == 0) {
+            if (s_active[ALARM_STORM]) s_acked[ALARM_STORM] = false;
+            s_active[ALARM_STORM] = false;
+        }
+        s_prev_storm = sl;
+    }
+
     s_any_active  = false;
     s_any_unacked = false;
 
@@ -231,7 +257,7 @@ void alarm_tick(void) {
         if (!s_active[i]) continue;
         s_any_active = true;
 
-        // Check if ack has expired → re-arm
+        // Check if ack has expired ΓåÆ re-arm
         if (s_acked[i] && rearm_s > 0 &&
             (now_s - s_ack_time_s[i]) >= rearm_s) {
             ESP_LOGI(TAG, "Alarm %d re-armed after %d min", i,
@@ -242,7 +268,7 @@ void alarm_tick(void) {
 
         if (s_acked[i]) continue;
 
-        // Unacked — beep every 5 seconds
+        // Unacked ΓÇö beep every 5 seconds
         s_any_unacked = true;
         if (now_s - s_last_tone_s[i] < BEEP_INTERVAL_S) continue;
         s_last_tone_s[i] = now_s;
@@ -252,7 +278,7 @@ void alarm_tick(void) {
             : AlarmPattern::BEEP_TRIPLE;
         alarm_beep(pat);
 
-        // Wake display only — no navigation, overlay covers full screen
+        // Wake display only ΓÇö no navigation, overlay covers full screen
         if (!s_navigated[i]) {
             s_navigated[i] = true;
             display_wake();

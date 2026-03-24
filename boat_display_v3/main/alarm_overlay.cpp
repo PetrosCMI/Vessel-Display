@@ -12,7 +12,7 @@
 
 static const char* TAG = "AlarmOverlay";
 
-// -- Widgets ---------------------------------------------------
+// ΓöÇΓöÇ Widgets ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 static lv_obj_t* s_overlay      = NULL;
 static lv_obj_t* s_icon_lbl     = NULL;
 static lv_obj_t* s_title_lbl    = NULL;
@@ -25,7 +25,7 @@ static lv_obj_t* s_ack_btn_lbl  = NULL;
 static AlarmID   s_shown_id     = ALARM_COUNT;
 static bool      s_visible      = false;
 
-// -- Helpers ---------------------------------------------------
+// ΓöÇΓöÇ Helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 static void fmt_depth_cur(char* buf, size_t n) {
     BoatData d = boatDataSnapshot();
     if (isnan(d.depth_m)) { snprintf(buf, n, "---"); return; }
@@ -67,17 +67,21 @@ static bool find_active_alarm(AlarmID* out_id) {
 static void refresh(AlarmID id) {
     lv_label_set_text(s_title_lbl, ALARM_TABLE[id].label);
 
-    bool is_depth = (id == ALARM_DEPTH_MIN || id == ALARM_DEPTH_MAX);
-    bool is_wind  = (id == ALARM_WIND_SPEED_MAX);
-    bool is_batt  = (id == ALARM_BATT_HOUSE ||
-                     id == ALARM_BATT_START ||
-                     id == ALARM_BATT_FORWARD);
+    bool is_depth  = (id == ALARM_DEPTH_MIN || id == ALARM_DEPTH_MAX);
+    bool is_wind   = (id == ALARM_WIND_SPEED_MAX);
+    bool is_batt   = (id == ALARM_BATT_HOUSE ||
+                      id == ALARM_BATT_START ||
+                      id == ALARM_BATT_FORWARD);
+    bool is_anchor = (id == ALARM_ANCHOR_DRAG);
+    bool is_storm  = (id == ALARM_STORM);
 
     // Current value
     lv_label_set_text(s_cur_row_lbl,
-        is_depth ? "Depth:" :
-        is_wind  ? "Wind Speed:" :
-        is_batt  ? "Voltage:" : "Current:");
+        is_depth  ? "Depth:"      :
+        is_wind   ? "Wind Speed:" :
+        is_batt   ? "Voltage:"    :
+        is_anchor ? "Drift:"      :
+        is_storm  ? "Storm Level:": "Current:");
 
     char cur[32];
     if (is_depth) {
@@ -91,6 +95,14 @@ static void refresh(AlarmID id) {
                                                d.forward_v;
         if (isnan(v)) snprintf(cur, sizeof(cur), "---");
         else          snprintf(cur, sizeof(cur), "%.2f V", v);
+    } else if (is_anchor) {
+        BoatData d = boatDataSnapshot();
+        if (isnan(d.anchor_dist_m)) snprintf(cur, sizeof(cur), "---");
+        else snprintf(cur, sizeof(cur), "%.0f m", d.anchor_dist_m);
+    } else if (is_storm) {
+        BoatData d = boatDataSnapshot();
+        if (isnan(d.storm_level)) snprintf(cur, sizeof(cur), "---");
+        else snprintf(cur, sizeof(cur), "%.0f", d.storm_level);
     } else {
         snprintf(cur, sizeof(cur), "---");
     }
@@ -104,6 +116,12 @@ static void refresh(AlarmID id) {
     } else if (is_batt) {
         lv_label_set_text(s_set_row_lbl, "Low limit:");
         snprintf(set, sizeof(set), "%.1f V", gSettings.battery_low_v);
+    } else if (is_anchor) {
+        lv_label_set_text(s_set_row_lbl, "Radius:");
+        snprintf(set, sizeof(set), "%.0f m", gSettings.anchor_radius_m);
+    } else if (is_storm) {
+        lv_label_set_text(s_set_row_lbl, "Trigger:");
+        snprintf(set, sizeof(set), "Rising > 0");
     } else {
         lv_label_set_text(s_set_row_lbl, "Maximum:");
         fmt_threshold(set, sizeof(set), id, true);
@@ -117,7 +135,7 @@ static void refresh(AlarmID id) {
     lv_label_set_text(s_ack_btn_lbl, ack_txt);
 }
 
-// -- Init ------------------------------------------------------
+// ΓöÇΓöÇ Init ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 void alarm_overlay_init(void) {
     // lv_layer_top() always renders above everything
     // and receives touch before the tabview
@@ -226,7 +244,7 @@ void alarm_overlay_init(void) {
     ESP_LOGI(TAG, "Alarm overlay initialised");
 }
 
-// -- Update ΓÇö called from ui_update() every tick ---------------
+// ΓöÇΓöÇ Update ΓÇö called from ui_update() every tick ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 void alarm_overlay_update(void) {
     AlarmID active_id;
     bool has_unacked = find_active_alarm(&active_id);

@@ -5,7 +5,7 @@
 
 static const char* TAG = "Settings";
 static const char* NVS_NS = "boatdisp";
-static const uint8_t SCHEMA_VER = 4;   // bumped ΓÇö battery alarm fields added
+static const uint8_t SCHEMA_VER = 6;   // bumped ΓÇö storm alarm added
 
 Settings gSettings;
 
@@ -16,6 +16,8 @@ const AlarmDef ALARM_TABLE[ALARM_COUNT] = {
     { ALARM_BATT_HOUSE,     "House Battery",  12.0f, NAN   },
     { ALARM_BATT_START,     "Start Battery",  12.0f, NAN   },
     { ALARM_BATT_FORWARD,   "Fwd Battery",    12.0f, NAN   },
+    { ALARM_ANCHOR_DRAG,    "Anchor Drag",    NAN,   NAN   },
+    { ALARM_STORM,          "Storm Warning",  NAN,   NAN   },
 };
 
 void settings_init() {
@@ -70,6 +72,10 @@ void settings_init() {
     if (nvs_get_u32(h, "batt_low_mv", &batt_mv) == ESP_OK)
         gSettings.battery_low_v = batt_mv / 1000.0f;
 
+    uint32_t anchor_r = 50;
+    if (nvs_get_u32(h, "anchor_r_m", &anchor_r) == ESP_OK)
+        gSettings.anchor_radius_m = (float)anchor_r;
+
     // WiFi networks
     sz = sizeof(gSettings.wifi);
     nvs_get_blob(h, "wifi_nets", &gSettings.wifi, &sz);
@@ -103,6 +109,7 @@ void settings_save() {
     nvs_set_blob(h, "alarm_lo",  gSettings.alarm_lo,      sizeof(gSettings.alarm_lo));
     nvs_set_blob(h, "alarm_hi",  gSettings.alarm_hi,      sizeof(gSettings.alarm_hi));
     nvs_set_u32(h,  "batt_low_mv", (uint32_t)(gSettings.battery_low_v * 1000.0f));
+    nvs_set_u32(h,  "anchor_r_m",  (uint32_t)gSettings.anchor_radius_m);
     nvs_set_blob(h, "wifi_nets", &gSettings.wifi,         sizeof(gSettings.wifi));
     nvs_set_str(h,  "sk_host",   gSettings.signalk_host);
     nvs_set_u32(h,  "sk_port",   (uint32_t)gSettings.signalk_port);

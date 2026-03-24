@@ -126,8 +126,8 @@ static void build(lv_obj_t* tab) {
 
     // Start config button
     s_btn_config = lv_btn_create(s_config_card);
-    lv_obj_set_size(s_btn_config, 200, 44);
-    lv_obj_set_pos(s_btn_config, 0, 96);
+    lv_obj_set_size(s_btn_config, 200, 60);
+    lv_obj_set_pos(s_btn_config, 0, 40);
     lv_obj_set_style_bg_color(s_btn_config, C_ACCENT, 0);
     lv_obj_t* bcl = lv_label_create(s_btn_config);
     lv_label_set_text(bcl, LV_SYMBOL_WIFI "  Start Config");
@@ -140,8 +140,8 @@ static void build(lv_obj_t* tab) {
 
     // Stop config button (hidden until config active)
     s_btn_stop = lv_btn_create(s_config_card);
-    lv_obj_set_size(s_btn_stop, 200, 44);
-    lv_obj_set_pos(s_btn_stop, 0, 96);
+    lv_obj_set_size(s_btn_stop, 200, 60);
+    lv_obj_set_pos(s_btn_stop, 0, 40);
     lv_obj_set_style_bg_color(s_btn_stop, lv_color_hex(0x401010), 0);
     lv_obj_t* bsl = lv_label_create(s_btn_stop);
     lv_label_set_text(bsl, LV_SYMBOL_CLOSE "  Stop Config");
@@ -153,8 +153,8 @@ static void build(lv_obj_t* tab) {
 
     // Restart button
     lv_obj_t* rst_btn = lv_btn_create(s_config_card);
-    lv_obj_set_size(rst_btn, 200, 44);
-    lv_obj_set_pos(rst_btn, 210, 96);
+    lv_obj_set_size(rst_btn, 200, 60);
+    lv_obj_set_pos(rst_btn, 210, 40);
     lv_obj_set_style_bg_color(rst_btn, lv_color_hex(0x303040), 0);
     lv_obj_t* rbl = lv_label_create(rst_btn);
     lv_label_set_text(rbl, LV_SYMBOL_REFRESH "  Restart");

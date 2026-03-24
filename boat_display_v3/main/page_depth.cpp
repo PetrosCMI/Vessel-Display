@@ -19,6 +19,10 @@
 static InstrCard dep_depth, dep_max, dep_min;
 static InstrCard dep_water_temp, dep_air_temp;
 
+static float last_depth = 0;
+static float last_water_temp = 0;
+static float last_air_temp = 0;
+
 static const int W  = 454;
 static const int H  = 370;
 static const int HW = 227;   // half width
@@ -73,10 +77,19 @@ static void build(lv_obj_t* tab) {
 static void update(void) {
     BoatData d = boatDataSnapshot();
     char buf[24];
+    char val_buf[16];  // Buffer for the numeric value only
 
     bool depth_lo = alarm_is_active(ALARM_DEPTH_MIN);
     bool depth_hi = alarm_is_active(ALARM_DEPTH_MAX);
-    const char* du = fmt_depth(d.depth_m, buf, sizeof(buf));
+
+    // 1. Get the formatted depth string (e.g., "12.4")
+    const char* du = fmt_depth(d.depth_m, val_buf, sizeof(buf));
+
+    // 2. Combine value with the trend arrow/minus
+    snprintf(buf, sizeof(buf), "%s %s", val_buf, get_trend_symbol(d.depth_m, last_depth));
+    last_depth = d.depth_m;
+
+    // 3. Update the card
     instr_card_set(dep_depth, buf, du, depth_hi, depth_lo);
     if (!depth_lo && !depth_hi)
         lv_obj_set_style_text_color(dep_depth.val_lbl, C_DEPTH, 0);
@@ -87,13 +100,17 @@ static void update(void) {
     du = fmt_depth(d.depth_min_m, buf, sizeof(buf));
     instr_card_set(dep_min, buf, du);
 
-    const char* tu = fmt_temp(d.water_temp_c, buf, sizeof(buf));
+    const char* tu = fmt_temp(d.water_temp_c, val_buf, sizeof(buf));
+    snprintf(buf, sizeof(buf), "%s %s", val_buf, get_trend_symbol(d.water_temp_c, last_water_temp));
+    last_water_temp = d.water_temp_c;
     instr_card_set(dep_water_temp, buf, tu);
 
-    tu = fmt_temp(d.air_temp_c, buf, sizeof(buf));
+    tu = fmt_temp(d.air_temp_c, val_buf, sizeof(buf));
+    snprintf(buf, sizeof(buf), "%s %s", val_buf, get_trend_symbol(d.air_temp_c, last_air_temp));
+    last_air_temp = d.air_temp_c;
     instr_card_set(dep_air_temp, buf, tu);
 }
 
 static struct DepthReg {
-    DepthReg() { ui_register_page({ LV_SYMBOL_DOWN " DEPTH", build, update }); }
+    DepthReg() { ui_register_page({ LV_SYMBOL_DOWN " DPTH", build, update }); }
 } _reg;

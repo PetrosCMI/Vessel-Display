@@ -14,9 +14,9 @@ static esp_websocket_client_handle_t s_client = NULL;
 static inline float rad2deg(float r) { return r * 57.29578f; }
 static inline float K2C(float k)     { return k - 273.15f;   }
 
-// ─────────────────────────────────────────────
-//  Delta parser — unchanged
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+//  Delta parser ΓÇö unchanged
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 static void parse_delta(const char* data, int len) {
     char* buf = (char*)malloc(len + 1);
     if (!buf) return;
@@ -102,6 +102,10 @@ static void parse_delta(const char* data, int len) {
                 boatSet(gBoat.water_temp_c, K2C((float)value->valuedouble));
             else if (strcmp(path, SK_AIR_TEMP) == 0)
                 boatSet(gBoat.air_temp_c, K2C((float)value->valuedouble));
+            else if (strcmp(path, SK_PRESSURE) == 0)
+                boatSet(gBoat.pressure_hpa, (float)value->valuedouble / 100.0f); // Pa ΓåÆ hPa
+            else if (strcmp(path, SK_STORM_LEVEL) == 0)
+                boatSet(gBoat.storm_level, (float)value->valuedouble);
             else if (strcmp(path, SK_RPM) == 0)
                 boatSet(gBoat.rpm, (float)value->valuedouble * 60.0f);
             else if (strcmp(path, SK_COOLANT_TEMP) == 0)
@@ -125,9 +129,9 @@ static void parse_delta(const char* data, int len) {
     cJSON_Delete(root);
 }
 
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  WebSocket event handler
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 static void ws_event_handler(void* handler_args,
                               esp_event_base_t base,
                               int32_t event_id,
@@ -140,7 +144,7 @@ static void ws_event_handler(void* handler_args,
                 gBoat.signalk_connected = true;
                 xSemaphoreGive(gBoatMutex);
             }
-            // Spawn a task to send subscription — avoids blocking the
+            // Spawn a task to send subscription ΓÇö avoids blocking the
             // websocket event handler which can corrupt client state
             xTaskCreate([](void*) {
                 vTaskDelay(pdMS_TO_TICKS(200));
@@ -172,11 +176,11 @@ static void ws_event_handler(void* handler_args,
     }
 }
 
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  Public API
-// ─────────────────────────────────────────────
+// ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 void signalk_start(void) {
-    // Use gSettings — falls back to hardcoded defaults if NVS empty
+    // Use gSettings ΓÇö falls back to hardcoded defaults if NVS empty
     const char* host = gSettings.signalk_host[0]
                        ? gSettings.signalk_host : "192.168.1.100";
     uint16_t    port = gSettings.signalk_port

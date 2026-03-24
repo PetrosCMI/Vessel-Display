@@ -51,3 +51,5 @@ void instr_card_set(InstrCard& ic, const char* val_str,
 
 // Make obj and its direct children bubble scroll events to parent
 void ui_make_scroll_transparent(lv_obj_t* obj);
+
+const char* get_trend_symbol(float current, float last);

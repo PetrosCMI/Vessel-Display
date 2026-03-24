@@ -51,3 +51,10 @@ void instr_card_set(InstrCard& ic, const char* val_str,
     lv_color_t col = alert ? C_RED : warn ? C_YELLOW : C_TEXT_PRI;
     lv_obj_set_style_text_color(ic.val_lbl, col, 0);
 }
+
+// Helper to get the trend symbol
+const char* get_trend_symbol(float current, float last) {
+    if (current > last) return LV_SYMBOL_UP;
+    if (current < last) return LV_SYMBOL_DOWN;
+    return "   "; // No arrow if unchanged
+}
