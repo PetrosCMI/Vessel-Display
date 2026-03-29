@@ -22,6 +22,7 @@ static void parse_delta(const char* data, int len) {
     if (!buf) return;
     memcpy(buf, data, len);
     buf[len] = '\0';
+    ESP_LOGD( TAG, "parse_delta: buf: %s", buf );
 
     cJSON* root = cJSON_Parse(buf);
     free(buf);
@@ -38,38 +39,51 @@ static void parse_delta(const char* data, int len) {
         cJSON* val;
         cJSON_ArrayForEach(val, values) {
             const char* path = cJSON_GetStringValue(cJSON_GetObjectItem(val, "path"));
-            if (!path) continue;
             cJSON* value = cJSON_GetObjectItem(val, "value");
+            
+            // Handle both numeric and string values
+            float fval = 0.0f;
+            if (cJSON_IsNumber(value)) {
+                fval = (float)value->valuedouble;
+            } else if (cJSON_IsString(value)) {
+                fval = atof(cJSON_GetStringValue(value));
+            }
+            
+            ESP_LOGD( TAG, "parse_delta: path: %s value: %0.3f", path, fval );
 
             if (strcmp(path, SK_SOG) == 0)
-                boatSet(gBoat.sog_ms, (float)value->valuedouble);
+                boatSet(gBoat.sog_ms, fval);
             else if (strcmp(path, SK_STW) == 0)
-                boatSet(gBoat.stw_ms, (float)value->valuedouble);
+                boatSet(gBoat.stw_ms, fval);
             else if (strcmp(path, SK_COG) == 0)
-                boatSet(gBoat.cog_deg, rad2deg((float)value->valuedouble));
+                boatSet(gBoat.cog_deg, rad2deg(fval));
             else if (strcmp(path, SK_HDG_TRUE) == 0)
-                boatSet(gBoat.heading_deg, rad2deg((float)value->valuedouble));
+                boatSet(gBoat.heading_deg, rad2deg(fval));
             else if (strcmp(path, SK_HDG_MAG) == 0) {
                 if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
                     if (isnan(gBoat.heading_deg))
-                        gBoat.heading_deg = rad2deg((float)value->valuedouble);
+                        gBoat.heading_deg = rad2deg(fval);
                     xSemaphoreGive(gBoatMutex);
                 }
             }
             else if (strcmp(path, SK_POSITION) == 0) {
                 cJSON* lat = cJSON_GetObjectItem(value, "latitude");
                 cJSON* lon = cJSON_GetObjectItem(value, "longitude");
+                if (!lat) lat = cJSON_GetObjectItem(value, "lat");
+                if (!lon) lon = cJSON_GetObjectItem(value, "lon");
+
                 if (cJSON_IsNumber(lat) && cJSON_IsNumber(lon)) {
                     if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
                         gBoat.lat = (float)lat->valuedouble;
                         gBoat.lon = (float)lon->valuedouble;
+                        ESP_LOGI( "SK", "Lat: %f, Lon: %f", gBoat.lat, gBoat.lon );
                         gBoat.gps_valid = true;
                         xSemaphoreGive(gBoatMutex);
                     }
                 }
             }
             else if (strcmp(path, SK_AWS) == 0) {
-                float aws = (float)value->valuedouble;
+                float aws = fval;
                 if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
                     gBoat.aws_ms = aws;
                     if (isnan(gBoat.aws_max_ms) || aws > gBoat.aws_max_ms)
@@ -79,15 +93,15 @@ static void parse_delta(const char* data, int len) {
                 }
             }
             else if (strcmp(path, SK_AWA) == 0)
-                boatSet(gBoat.awa_deg, rad2deg((float)value->valuedouble));
+                boatSet(gBoat.awa_deg, rad2deg(fval));
             else if (strcmp(path, SK_TWS) == 0)
-                boatSet(gBoat.tws_ms, (float)value->valuedouble);
+                boatSet(gBoat.tws_ms, fval);
             else if (strcmp(path, SK_TWA) == 0)
-                boatSet(gBoat.twa_deg, rad2deg((float)value->valuedouble));
+                boatSet(gBoat.twa_deg, rad2deg(fval));
             else if (strcmp(path, SK_TWD) == 0)
-                boatSet(gBoat.twd_deg, rad2deg((float)value->valuedouble));
+                boatSet(gBoat.twd_deg, rad2deg(fval));
             else if (strcmp(path, SK_DEPTH) == 0) {
-                float depth = (float)value->valuedouble;
+                float depth = fval;
                 if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(10)) == pdTRUE) {
                     gBoat.depth_m = depth;
                     if (isnan(gBoat.depth_max_m) || depth > gBoat.depth_max_m)
@@ -99,31 +113,33 @@ static void parse_delta(const char* data, int len) {
                 }
             }
             else if (strcmp(path, SK_WATER_TEMP) == 0)
-                boatSet(gBoat.water_temp_c, K2C((float)value->valuedouble));
+                boatSet(gBoat.water_temp_c, K2C(fval));
             else if (strcmp(path, SK_AIR_TEMP) == 0)
-                boatSet(gBoat.air_temp_c, K2C((float)value->valuedouble));
+                boatSet(gBoat.air_temp_c, K2C(fval));
             else if (strcmp(path, SK_PRESSURE) == 0)
-                boatSet(gBoat.pressure_hpa, (float)value->valuedouble / 100.0f); // Pa ΓåÆ hPa
+                boatSet(gBoat.pressure_hpa, fval / 100.0f); // Pa → hPa
             else if (strcmp(path, SK_STORM_LEVEL) == 0)
-                boatSet(gBoat.storm_level, (float)value->valuedouble);
+                boatSet(gBoat.storm_level, fval);
             else if (strcmp(path, SK_RPM) == 0)
-                boatSet(gBoat.rpm, (float)value->valuedouble * 60.0f);
+                boatSet(gBoat.rpm, fval * 60.0f);
             else if (strcmp(path, SK_COOLANT_TEMP) == 0)
-                boatSet(gBoat.coolant_temp, K2C((float)value->valuedouble));
+                boatSet(gBoat.coolant_temp, K2C(fval));
             else if (strcmp(path, SK_OIL_PRESSURE) == 0)
-                boatSet(gBoat.oil_pressure, (float)value->valuedouble / 1000.0f);
+                boatSet(gBoat.oil_pressure, fval / 1000.0f);
             else if (strcmp(path, SK_BATT_HOUSE_V) == 0)
-                boatSet(gBoat.house_v, (float)value->valuedouble);
-            else if (strcmp(path, SK_BATT_HOUSE_A_ALL) == 0)
-                boatSet(gBoat.house_a_all, (float)value->valuedouble);
+                boatSet(gBoat.house_v, fval);
+            else if (strcmp(path, SK_BATT_HOUSE_A) == 0)
+                boatSet(gBoat.house_a, fval);
             else if (strcmp(path, SK_BATT_HOUSE_A_LI) == 0)
-                boatSet(gBoat.house_a_li, (float)value->valuedouble);
+                boatSet(gBoat.house_a_li, fval);
+            else if (strcmp(path, SK_BATT_HOUSE_V_LI) == 0)
+                boatSet(gBoat.house_v_li, fval);
             else if (strcmp(path, SK_BATT_START_V) == 0)
-                boatSet(gBoat.start_batt_v, (float)value->valuedouble);
+                boatSet(gBoat.start_batt_v, fval);
             else if (strcmp(path, SK_BATT_START_A) == 0)
-                boatSet(gBoat.start_batt_a, (float)value->valuedouble);
+                boatSet(gBoat.start_batt_a, fval);
             else if (strcmp(path, SK_BATT_FWD_V) == 0)
-                boatSet(gBoat.forward_v, (float)value->valuedouble);
+                boatSet(gBoat.forward_v, fval);
         }
     }
     cJSON_Delete(root);

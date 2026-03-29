@@ -250,10 +250,18 @@ void ui_update(void) {
     alarm_overlay_update();
 
     BoatData d = boatDataSnapshot();
+    
+    // Always update NET page (index 0) regardless of SignalK data
+    const std::vector<Page>& pages = ui_get_pages();
+    if (!pages.empty()) {
+        pages[6].update_fn();  // NET page is first
+    }
+    
+    // Update other pages only when data changes
     if (d.last_update_ms != last_update_ms) {
         last_update_ms = d.last_update_ms;
-        for (const Page& p : ui_get_pages()) {
-            p.update_fn();
+        for (size_t i = 1; i < pages.size(); i++) {
+            pages[i].update_fn();
         }
     }
 }

@@ -183,31 +183,42 @@ static void update(void) {
     }
 
     // WiFi status
-    wifi_ap_record_t ap_info;
     if (config_active) {
         lv_label_set_text(s_wifi_status_lbl, "Config AP: BoatDisplay");
         lv_obj_set_style_text_color(s_wifi_status_lbl, C_YELLOW, 0);
         lv_label_set_text(s_ip_lbl, "192.168.4.1");
-    } else if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
-        char buf[48];
-        snprintf(buf, sizeof(buf), "%s  (%ddBm)", ap_info.ssid, ap_info.rssi);
-        lv_label_set_text(s_wifi_status_lbl, buf);
-        lv_obj_set_style_text_color(s_wifi_status_lbl, C_GREEN, 0);
-
-        // Get IP
+    } else {
+        // Get IP first - if we have an IP, we're connected
         esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
-        if (netif) {
-            esp_netif_ip_info_t ip_info;
-            if (esp_netif_get_ip_info(netif, &ip_info) == ESP_OK) {
+        esp_netif_ip_info_t ip_info;
+        bool has_ip = false;
+        
+        if (netif && esp_netif_get_ip_info(netif, &ip_info) == ESP_OK) {
+            if (ip_info.ip.addr != 0) {
+                has_ip = true;
                 char ipbuf[20];
                 esp_ip4addr_ntoa(&ip_info.ip, ipbuf, sizeof(ipbuf));
                 lv_label_set_text(s_ip_lbl, ipbuf);
             }
         }
-    } else {
-        lv_label_set_text(s_wifi_status_lbl, "Not connected");
-        lv_obj_set_style_text_color(s_wifi_status_lbl, C_RED, 0);
-        lv_label_set_text(s_ip_lbl, "");
+        
+        if (has_ip) {
+            // Try to get AP info for SSID and RSSI
+            wifi_ap_record_t ap_info;
+            if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK) {
+                char buf[48];
+                snprintf(buf, sizeof(buf), "%s  (%ddBm)", ap_info.ssid, ap_info.rssi);
+                lv_label_set_text(s_wifi_status_lbl, buf);
+            } else {
+                // Have IP but can't get AP info - just show connected
+                lv_label_set_text(s_wifi_status_lbl, "Connected");
+            }
+            lv_obj_set_style_text_color(s_wifi_status_lbl, C_GREEN, 0);
+        } else {
+            lv_label_set_text(s_wifi_status_lbl, "Not connected");
+            lv_obj_set_style_text_color(s_wifi_status_lbl, C_RED, 0);
+            lv_label_set_text(s_ip_lbl, "");
+        }
     }
 
     // SignalK status

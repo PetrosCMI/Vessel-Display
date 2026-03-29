@@ -35,8 +35,9 @@
 
 // ΓöÇΓöÇ Electrical ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 #define SK_BATT_HOUSE_V     "electrical.batteries.house.voltage"
-#define SK_BATT_HOUSE_A_ALL "electrical.batteries.house.all.current"
+#define SK_BATT_HOUSE_A     "electrical.batteries.house.current"
 #define SK_BATT_HOUSE_A_LI  "electrical.batteries.house.li.current"
+#define SK_BATT_HOUSE_V_LI  "electrical.batteries.house.li.voltage"
 #define SK_BATT_START_V     "electrical.batteries.start.voltage"
 #define SK_BATT_START_A     "electrical.batteries.start.current"
 #define SK_BATT_FWD_V       "electrical.batteries.forward.voltage"

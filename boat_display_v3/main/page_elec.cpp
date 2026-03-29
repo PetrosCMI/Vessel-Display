@@ -8,8 +8,8 @@
 
 // ── Layout (480×390) ─────────────────────────────────────────
 //
-//  Row 0 (h=180): [ HOUSE — full width, V + 2× current      ]
-//  Row 1 (h=180): [ START — half     ] [ FORWARD — half     ]
+//  Top Row    (h=190): [ HOUSE (left half)  ] [ HOUSE LI (right half) ]
+//  Bottom Row (h=190): [ START (left half)  ] [ FORWARD (right half)  ]
 
 // ── Widget refs ───────────────────────────────────────────────
 struct BankCard {
@@ -18,16 +18,17 @@ struct BankCard {
     lv_obj_t* a2_lbl;
 };
 
-static BankCard s_house, s_start, s_fwd;
+static BankCard s_house, s_li, s_start, s_fwd;
+
 static void fmt_v(float v, char* buf, size_t n) {
     if (isnan(v)) snprintf(buf, n, "---");
-    else          snprintf(buf, n, "%.1f V", v);
+    else          snprintf(buf, n, "%.2f V", v);
 }
 
 // ── Helper: format current (+ = charging, - = discharging) ───
 static void fmt_a(float a, char* buf, size_t n) {
     if (isnan(a)) snprintf(buf, n, "--- A");
-    else          snprintf(buf, n, "%+.1f A", a);
+    else          snprintf(buf, n, "%+.2f A", a);
 }
 
 // ── Helper: current label colour ─────────────────────────────
@@ -78,26 +79,26 @@ static BankCard make_bank_card(lv_obj_t* parent,
         lv_obj_t* a1_name = lv_label_create(card);
         lv_label_set_text(a1_name, a1_label);
         lv_obj_add_style(a1_name, &g_style_label, 0);
-        lv_obj_set_pos(a1_name, 0, has_a2 ? 88 : 96);
+        lv_obj_set_pos(a1_name, 0, 88);
 
         bc.a1_lbl = lv_label_create(card);
         lv_label_set_text(bc.a1_lbl, "---");
         lv_obj_set_style_text_font(bc.a1_lbl, &lv_font_montserrat_24, 0);
         lv_obj_set_style_text_color(bc.a1_lbl, C_TEXT_SEC, 0);
-        lv_obj_set_pos(bc.a1_lbl, 0, has_a2 ? 108 : 116);
+        lv_obj_set_pos(bc.a1_lbl, 0, 108);
     }
 
     if (has_a2) {
         lv_obj_t* a2_name = lv_label_create(card);
         lv_label_set_text(a2_name, a2_label);
         lv_obj_add_style(a2_name, &g_style_label, 0);
-        lv_obj_set_pos(a2_name, 220, 88);
+        lv_obj_set_pos(a2_name, 0, 136);
 
         bc.a2_lbl = lv_label_create(card);
         lv_label_set_text(bc.a2_lbl, "---");
         lv_obj_set_style_text_font(bc.a2_lbl, &lv_font_montserrat_24, 0);
         lv_obj_set_style_text_color(bc.a2_lbl, C_TEXT_SEC, 0);
-        lv_obj_set_pos(bc.a2_lbl, 220, 108);
+        lv_obj_set_pos(bc.a2_lbl, 0, 156);
     }
 
     ui_make_scroll_transparent(card);
@@ -105,35 +106,48 @@ static BankCard make_bank_card(lv_obj_t* parent,
 }
 
 static void build(lv_obj_t* tab) {
+    // Top left: HOUSE
     s_house = make_bank_card(tab, "HOUSE",
-        true, "All", true, "LI",
-        0, 0, 454, 180);
+        true, "Current", false, NULL,
+        0, 0, 227, 190);
 
+    // Top right: HOUSE LI
+    s_li = make_bank_card(tab, "HOUSE LI",
+        true, "Current", false, NULL,
+        234, 0, 227, 190);
+
+    // Bottom left: START
     s_start = make_bank_card(tab, "START",
         true, "Current", false, NULL,
-        0, 188, 220, 176);
+        0, 197, 227, 190);
 
+    // Bottom right: FORWARD
     s_fwd = make_bank_card(tab, "FORWARD",
         false, NULL, false, NULL,
-        234, 188, 220, 176);
+        234, 197, 227, 190);
 }
 
 static void update(void) {
     BoatData d = boatDataSnapshot();
     char buf[24];
 
-    // House
+    // House (all batteries combined)
     fmt_v(d.house_v, buf, sizeof(buf));
     lv_label_set_text(s_house.v_lbl, buf);
     lv_obj_set_style_text_color(s_house.v_lbl, voltage_colour(d.house_v), 0);
 
-    fmt_a(d.house_a_all, buf, sizeof(buf));
+    fmt_a(d.house_a, buf, sizeof(buf));
     lv_label_set_text(s_house.a1_lbl, buf);
-    lv_obj_set_style_text_color(s_house.a1_lbl, current_colour(d.house_a_all), 0);
+    lv_obj_set_style_text_color(s_house.a1_lbl, current_colour(d.house_a), 0);
+
+    // LI (lithium battery)
+    fmt_v(d.house_v_li, buf, sizeof(buf));
+    lv_label_set_text(s_li.v_lbl, buf);
+    lv_obj_set_style_text_color(s_li.v_lbl, voltage_colour(d.house_v_li), 0);
 
     fmt_a(d.house_a_li, buf, sizeof(buf));
-    lv_label_set_text(s_house.a2_lbl, buf);
-    lv_obj_set_style_text_color(s_house.a2_lbl, current_colour(d.house_a_li), 0);
+    lv_label_set_text(s_li.a1_lbl, buf);
+    lv_obj_set_style_text_color(s_li.a1_lbl, current_colour(d.house_a_li), 0);
 
     // Start
     fmt_v(d.start_batt_v, buf, sizeof(buf));

@@ -45,8 +45,9 @@ struct BoatData {
     float start_v      = NAN;   // legacy
 
     // Battery banks
-    float house_v      = NAN;
-    float house_a_all  = NAN;   // house total current
+    float house_v      = NAN; 
+    float house_a      = NAN;   // house total current
+    float house_v_li   = NAN;   // house LI voltage
     float house_a_li   = NAN;   // house LI current
     float start_batt_v = NAN;
     float start_batt_a = NAN;
