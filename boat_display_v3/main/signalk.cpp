@@ -76,9 +76,9 @@ static void parse_delta(const char* data, int len) {
                     if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
                         gBoat.lat = (float)lat->valuedouble;
                         gBoat.lon = (float)lon->valuedouble;
-                        ESP_LOGI( "SK", "Lat: %f, Lon: %f", gBoat.lat, gBoat.lon );
                         gBoat.gps_valid = true;
                         xSemaphoreGive(gBoatMutex);
+                        ESP_LOGI( "SK", "Lat: %f, Lon: %f", gBoat.lat, gBoat.lon );
                     }
                 }
             }

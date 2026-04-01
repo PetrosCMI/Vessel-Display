@@ -8,18 +8,19 @@
 #include "numpad.h"
 #include "lvgl.h"
 #include "esp_heap_caps.h"
+#include "esp_log.h"
 #include <math.h>
 #include <stdio.h>
 
 // ── Trail ring buffer ─────────────────────────────────────────
 #define TRAIL_MAX   120
 
-struct TrailPoint { float lat; float lon; };
+struct TrailPoint { double lat; double lon; };
 static TrailPoint  s_trail[TRAIL_MAX] = {};
 static int         s_trail_head  = 0;
 static int         s_trail_count = 0;
-static float       s_last_trail_lat = NAN;
-static float       s_last_trail_lon = NAN;
+static double      s_last_trail_lat = NAN;
+static double      s_last_trail_lon = NAN;
 
 // ── Canvas ────────────────────────────────────────────────────
 #define CANVAS_W   454
@@ -37,23 +38,23 @@ static lv_obj_t*   s_depth_lbl   = NULL;
 static lv_obj_t*   s_status_lbl  = NULL;
 
 // ── Haversine distance (metres) ───────────────────────────────
-static float haversine_m(float lat1, float lon1, float lat2, float lon2) {
-    const float R = 6371000.0f;
-    float dlat = (lat2 - lat1) * (float)M_PI / 180.0f;
-    float dlon = (lon2 - lon1) * (float)M_PI / 180.0f;
-    float a = sinf(dlat/2)*sinf(dlat/2) +
-              cosf(lat1*(float)M_PI/180.0f) * cosf(lat2*(float)M_PI/180.0f) *
-              sinf(dlon/2)*sinf(dlon/2);
-    return R * 2.0f * atan2f(sqrtf(a), sqrtf(1.0f-a));
+static double haversine_m(double lat1, double lon1, double lat2, double lon2) {
+    const double R = 6371000.0;
+    double dlat = (lat2 - lat1) * M_PI / 180.0;
+    double dlon = (lon2 - lon1) * M_PI / 180.0;
+    double a = sin(dlat/2)*sin(dlat/2) +
+              cos(lat1*M_PI/180.0) * cos(lat2*M_PI/180.0) *
+              sin(dlon/2)*sin(dlon/2);
+    return R * 2.0 * atan2(sqrt(a), sqrt(1.0-a));
 }
 
-static float bearing_deg(float lat1, float lon1, float lat2, float lon2) {
-    float dlon = (lon2 - lon1) * (float)M_PI / 180.0f;
-    float y = sinf(dlon) * cosf(lat2*(float)M_PI/180.0f);
-    float x = cosf(lat1*(float)M_PI/180.0f)*sinf(lat2*(float)M_PI/180.0f) -
-              sinf(lat1*(float)M_PI/180.0f)*cosf(lat2*(float)M_PI/180.0f)*cosf(dlon);
-    float b = atan2f(y, x) * 180.0f / (float)M_PI;
-    return fmodf(b + 360.0f, 360.0f);
+static double bearing_deg(double lat1, double lon1, double lat2, double lon2) {
+    double dlon = (lon2 - lon1) * M_PI / 180.0;
+    double y = sin(dlon) * cos(lat2*M_PI/180.0);
+    double x = cos(lat1*M_PI/180.0)*sin(lat2*M_PI/180.0) -
+              sin(lat1*M_PI/180.0)*cos(lat2*M_PI/180.0)*cos(dlon);
+    double b = atan2(y, x) * 180.0 / M_PI;
+    return fmod(b + 360.0, 360.0);
 }
 
 // ── Draw canvas using LVGL 9 layer API ───────────────────────
@@ -127,12 +128,12 @@ static void draw_canvas(void) {
             int idx1 = (s_trail_head - s_trail_count + i     + TRAIL_MAX) % TRAIL_MAX;
             int idx2 = (s_trail_head - s_trail_count + i + 1 + TRAIL_MAX) % TRAIL_MAX;
 
-            float dlat1 = (s_trail[idx1].lat - d.anchor_lat) * 111320.0f;
-            float dlon1 = (s_trail[idx1].lon - d.anchor_lon) *
-                           111320.0f * cosf(d.anchor_lat*(float)M_PI/180.0f);
-            float dlat2 = (s_trail[idx2].lat - d.anchor_lat) * 111320.0f;
-            float dlon2 = (s_trail[idx2].lon - d.anchor_lon) *
-                           111320.0f * cosf(d.anchor_lat*(float)M_PI/180.0f);
+            double dlat1 = (s_trail[idx1].lat - d.anchor_lat) * 111320.0f;
+            double dlon1 = (s_trail[idx1].lon - d.anchor_lon) *
+                           111320.0f * cosf(d.anchor_lat*M_PI/180.0f);
+            double dlat2 = (s_trail[idx2].lat - d.anchor_lat) * 111320.0f;
+            double dlon2 = (s_trail[idx2].lon - d.anchor_lon) *
+                           111320.0f * cosf(d.anchor_lat*M_PI/180.0f);
 
             uint8_t bright = 60 + (uint8_t)(180 * i / s_trail_count);
             tldsc.color  = lv_color_make(bright/4, bright/4, bright);
@@ -146,9 +147,9 @@ static void draw_canvas(void) {
 
     // Boat position dot
     if (!isnan(d.lat) && !isnan(d.lon)) {
-        float dlat = (d.lat - d.anchor_lat) * 111320.0f;
-        float dlon = (d.lon - d.anchor_lon) *
-                      111320.0f * cosf(d.anchor_lat*(float)M_PI/180.0f);
+        double dlat = (d.lat - d.anchor_lat) * 111320.0f;
+        double dlon = (d.lon - d.anchor_lon) *
+                      111320.0f * cosf(d.anchor_lat*M_PI/180.0f);
         int bx = cx + (int)(dlon * scale);
         int by = cy - (int)(dlat * scale);
 
@@ -322,6 +323,9 @@ static void update(void) {
     if (d.anchor_set && d.gps_valid && !isnan(d.lat)) {
         float dist = haversine_m(d.anchor_lat, d.anchor_lon, d.lat, d.lon);
         float bear = bearing_deg(d.anchor_lat, d.anchor_lon, d.lat, d.lon);
+
+        ESP_LOGI("Anchor", "Anchor: %.6f,%.6f  Current: %.6f,%.6f  Dist: %.2fm",
+            d.anchor_lat, d.anchor_lon, d.lat, d.lon, dist);
 
         if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
             gBoat.anchor_dist_m      = dist;

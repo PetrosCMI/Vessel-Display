@@ -83,7 +83,7 @@ static void update(void) {
     bool depth_hi = alarm_is_active(ALARM_DEPTH_MAX);
 
     // 1. Get the formatted depth string (e.g., "12.4")
-    const char* du = fmt_depth(d.depth_m, val_buf, sizeof(buf));
+    const char* du = fmt_depth(d.depth_m, val_buf, sizeof(val_buf));
 
     // 2. Combine value with the trend arrow/minus
     snprintf(buf, sizeof(buf), "%s %s", val_buf, get_trend_symbol(d.depth_m, last_depth));

@@ -18,8 +18,8 @@ struct BoatData {
     float stw_ms       = NAN;   // Speed through water (m/s)
     float cog_deg      = NAN;   // Course over ground (┬░T)
     float heading_deg  = NAN;   // Heading true/magnetic (┬░)
-    float lat          = NAN;
-    float lon          = NAN;
+    double lat          = NAN;
+    double lon          = NAN;
     bool  gps_valid    = false;
 
     // Wind (SI: m/s, degrees)
@@ -57,8 +57,8 @@ struct BoatData {
     float oil_pressure = NAN;
 
     // Anchor watch
-    float    anchor_lat   = NAN;   // drop point latitude
-    float    anchor_lon   = NAN;   // drop point longitude
+    double    anchor_lat   = NAN;   // drop point latitude
+    double    anchor_lon   = NAN;   // drop point longitude
     bool     anchor_set   = false; // anchor watch active
     float    anchor_dist_m = NAN;  // current distance from anchor (m)
     float    anchor_bearing_deg = NAN; // bearing from anchor to boat (┬░T)

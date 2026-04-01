@@ -260,7 +260,7 @@ void ui_update(void) {
     // Update other pages only when data changes
     if (d.last_update_ms != last_update_ms) {
         last_update_ms = d.last_update_ms;
-        for (size_t i = 1; i < pages.size(); i++) {
+        for (size_t i = 0; i < pages.size(); i++) {
             pages[i].update_fn();
         }
     }
