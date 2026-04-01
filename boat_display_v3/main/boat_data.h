@@ -47,11 +47,19 @@ struct BoatData {
     // Battery banks
     float house_v      = NAN; 
     float house_a      = NAN;   // house total current
+    float house_soc    = NAN;        // House battery SOC (0-100%)
+
     float house_v_li   = NAN;   // house LI voltage
     float house_a_li   = NAN;   // house LI current
-    float start_batt_v = NAN;
-    float start_batt_a = NAN;
+    float house_li_soc = NAN;     // LI battery SOC (0-100%)
+
+    float start_batt_v   = NAN;
+    float start_batt_a   = NAN;
+    float start_batt_soc = NAN;   // Start battery SOC (0-100%)
+
     float forward_v    = NAN;
+    float forward_a    = NAN;
+    float forward_soc  = NAN;      // Forward battery SOC (0-100%)
 
     float coolant_temp = NAN;
     float oil_pressure = NAN;

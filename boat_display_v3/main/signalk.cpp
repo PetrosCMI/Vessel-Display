@@ -126,20 +126,34 @@ static void parse_delta(const char* data, int len) {
                 boatSet(gBoat.coolant_temp, K2C(fval));
             else if (strcmp(path, SK_OIL_PRESSURE) == 0)
                 boatSet(gBoat.oil_pressure, fval / 1000.0f);
+
             else if (strcmp(path, SK_BATT_HOUSE_V) == 0)
                 boatSet(gBoat.house_v, fval);
             else if (strcmp(path, SK_BATT_HOUSE_A) == 0)
                 boatSet(gBoat.house_a, fval);
-            else if (strcmp(path, SK_BATT_HOUSE_A_LI) == 0)
+            else if (strcmp(path, SK_BATT_HOUSE_SOC) == 0)
+                boatSet(gBoat.house_soc, fval * 100.0f);  // SignalK is 0-1, display as 0-100%
+
+            else if (strcmp(path, SK_BATT_HOUSE_LI_A) == 0)
                 boatSet(gBoat.house_a_li, fval);
-            else if (strcmp(path, SK_BATT_HOUSE_V_LI) == 0)
+            else if (strcmp(path, SK_BATT_HOUSE_LI_V) == 0)
                 boatSet(gBoat.house_v_li, fval);
+            else if (strcmp(path, SK_BATT_HOUSE_LI_SOC) == 0)
+                boatSet(gBoat.house_li_soc, fval * 100.0f);
+
             else if (strcmp(path, SK_BATT_START_V) == 0)
                 boatSet(gBoat.start_batt_v, fval);
             else if (strcmp(path, SK_BATT_START_A) == 0)
                 boatSet(gBoat.start_batt_a, fval);
+            else if (strcmp(path, SK_BATT_START_SOC) == 0)
+                boatSet(gBoat.start_batt_soc, fval * 100.0f);
+
             else if (strcmp(path, SK_BATT_FWD_V) == 0)
                 boatSet(gBoat.forward_v, fval);
+            else if (strcmp(path, SK_BATT_FWD_A) == 0)
+                boatSet(gBoat.forward_a, fval);
+            else if (strcmp(path, SK_BATT_FWD_SOC) == 0)
+                boatSet(gBoat.forward_soc, fval * 100.0f);
         }
     }
     cJSON_Delete(root);

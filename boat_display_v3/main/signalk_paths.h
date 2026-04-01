@@ -36,8 +36,16 @@
 // ΓöÇΓöÇ Electrical ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 #define SK_BATT_HOUSE_V     "electrical.batteries.house.voltage"
 #define SK_BATT_HOUSE_A     "electrical.batteries.house.current"
-#define SK_BATT_HOUSE_A_LI  "electrical.batteries.house.li.current"
-#define SK_BATT_HOUSE_V_LI  "electrical.batteries.house.li.voltage"
+#define SK_BATT_HOUSE_SOC    "electrical.batteries.house.capacity.stateOfCharge"
+
+#define SK_BATT_HOUSE_LI_A  "electrical.batteries.house.li.current"
+#define SK_BATT_HOUSE_LI_V  "electrical.batteries.house.li.voltage"
+#define SK_BATT_HOUSE_LI_SOC "electrical.batteries.house.li.capacity.stateOfCharge"
+
 #define SK_BATT_START_V     "electrical.batteries.start.voltage"
 #define SK_BATT_START_A     "electrical.batteries.start.current"
+#define SK_BATT_START_SOC    "electrical.batteries.start.capacity.stateOfCharge"
+
 #define SK_BATT_FWD_V       "electrical.batteries.forward.voltage"
+#define SK_BATT_FWD_A       "electrical.batteries.forward.current"
+#define SK_BATT_FWD_SOC      "electrical.batteries.forward.capacity.stateOfCharge"
