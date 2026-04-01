@@ -13,11 +13,16 @@ enum class AlarmPattern : uint8_t {
 void alarm_init(esp_codec_dev_handle_t speaker);
 void alarm_tick(void);
 
-// Acknowledge all active alarms (call on touch)
-// Silences beeping for alarm_rearm_minutes, then re-arms if condition persists
+// Acknowledge all active alarms — re-arms after alarm_rearm_minutes
 void alarm_acknowledge(void);
+// Acknowledge a single alarm
+void alarm_acknowledge_one(AlarmID id);
 
-void alarm_silence(void);   // permanent silence until condition clears
+// Permanent silence until condition clears (all alarms)
+void alarm_silence(void);
+// Permanent silence for a single alarm
+void alarm_silence_one(AlarmID id);
+
 void alarm_beep(AlarmPattern pattern);
 
 bool alarm_any_active(void);

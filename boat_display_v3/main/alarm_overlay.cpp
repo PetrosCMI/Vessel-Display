@@ -1,4 +1,4 @@
-// alarm_overlay.cpp ΓÇö full-screen alarm notification overlay
+// alarm_overlay.cpp — full-screen alarm notification overlay
 #include "alarm_overlay.h"
 #include "alarm.h"
 #include "boat_data.h"
@@ -12,7 +12,7 @@
 
 static const char* TAG = "AlarmOverlay";
 
-// ΓöÇΓöÇ Widgets ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── Widgets ───────────────────────────────────────────────────
 static lv_obj_t* s_overlay      = NULL;
 static lv_obj_t* s_icon_lbl     = NULL;
 static lv_obj_t* s_title_lbl    = NULL;
@@ -25,7 +25,7 @@ static lv_obj_t* s_ack_btn_lbl  = NULL;
 static AlarmID   s_shown_id     = ALARM_COUNT;
 static bool      s_visible      = false;
 
-// ΓöÇΓöÇ Helpers ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── Helpers ───────────────────────────────────────────────────
 static void fmt_depth_cur(char* buf, size_t n) {
     BoatData d = boatDataSnapshot();
     if (isnan(d.depth_m)) { snprintf(buf, n, "---"); return; }
@@ -130,12 +130,12 @@ static void refresh(AlarmID id) {
 
     char ack_txt[48];
     snprintf(ack_txt, sizeof(ack_txt),
-             LV_SYMBOL_OK "  ACK ΓÇö re-arm in %d min",
+             LV_SYMBOL_OK "  ACK — re-arm in %d min",
              gSettings.alarm_rearm_minutes);
     lv_label_set_text(s_ack_btn_lbl, ack_txt);
 }
 
-// ΓöÇΓöÇ Init ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── Init ──────────────────────────────────────────────────────
 void alarm_overlay_init(void) {
     // lv_layer_top() always renders above everything
     // and receives touch before the tabview
@@ -148,7 +148,7 @@ void alarm_overlay_init(void) {
     lv_obj_set_scrollbar_mode(s_overlay, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_flag(s_overlay, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(s_overlay, LV_OBJ_FLAG_SCROLLABLE);
-    // Consume touch events ΓÇö prevent them reaching tabview underneath
+    // Consume touch events — prevent them reaching tabview underneath
     lv_obj_add_event_cb(s_overlay, [](lv_event_t*) {}, LV_EVENT_CLICKED, NULL);
 
     // Warning icon + title
@@ -218,8 +218,8 @@ void alarm_overlay_init(void) {
     lv_obj_set_style_text_color(s_ack_btn_lbl, lv_color_hex(0x000000), 0);
     lv_obj_center(s_ack_btn_lbl);
     lv_obj_add_event_cb(ack_btn, [](lv_event_t*) {
-        alarm_acknowledge();
-        // Hide deferred to alarm_overlay_update() next tick
+        if (s_shown_id < ALARM_COUNT)
+            alarm_acknowledge_one(s_shown_id);
     }, LV_EVENT_CLICKED, NULL);
 
     // SILENCE button
@@ -234,8 +234,8 @@ void alarm_overlay_init(void) {
     lv_obj_set_style_text_color(sil_lbl, C_TEXT_PRI, 0);
     lv_obj_center(sil_lbl);
     lv_obj_add_event_cb(sil_btn, [](lv_event_t*) {
-        alarm_silence();
-        // Hide deferred to alarm_overlay_update() next tick
+        if (s_shown_id < ALARM_COUNT)
+            alarm_silence_one(s_shown_id);
     }, LV_EVENT_CLICKED, NULL);
 
     // Start hidden
@@ -244,7 +244,7 @@ void alarm_overlay_init(void) {
     ESP_LOGI(TAG, "Alarm overlay initialised");
 }
 
-// ΓöÇΓöÇ Update ΓÇö called from ui_update() every tick ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+// ── Update — called from ui_update() every tick ───────────────
 void alarm_overlay_update(void) {
     AlarmID active_id;
     bool has_unacked = find_active_alarm(&active_id);

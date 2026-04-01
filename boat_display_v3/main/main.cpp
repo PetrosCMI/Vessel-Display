@@ -21,6 +21,17 @@
 #include "ui.h"
 #include "display_timeout.h"
 
+#if 0   // This stuff is for CPU load monitoring
+#define configGENERATE_RUN_TIME_STATS           1
+#define configUSE_STATS_FORMATTING_FUNCTIONS    1
+
+extern void vConfigureTimerForRunTimeStats(void);
+extern uint32_t ulGetRunTimeCounterValue(void);
+
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
+#define portGET_RUN_TIME_COUNTER_VALUE()         ulGetRunTimeCounterValue()
+#endif
+
 // Forward declaration
 void page_network_check_autostart(void);
 
@@ -199,24 +210,81 @@ static void lvgl_update_timer_cb(lv_timer_t*) {
     ui_update();
 }
 
+static void log_runtime_stats_safe() {
+    TaskStatus_t *pxTaskStatusArray;
+    volatile UBaseType_t uxArraySize;
+    uint32_t ulTotalRunTime;
+
+    // 1. Get the number of tasks to know how much memory to allocate
+    uxArraySize = uxTaskGetNumberOfTasks();
+    pxTaskStatusArray = (TaskStatus_t *)malloc(uxArraySize * sizeof(TaskStatus_t));
+
+    if (pxTaskStatusArray != NULL) {
+        // 2. Populate the array with raw task data
+        uxArraySize = uxTaskGetSystemState(pxTaskStatusArray, uxArraySize, &ulTotalRunTime);
+
+        printf("\n--- Modern Task Stats ---\n");
+        
+        // 3. Prevent divide-by-zero, and account for dual-core (200% -> 100%)
+        #ifdef CONFIG_FREERTOS_UNICORE
+            ulTotalRunTime /= 100UL; 
+        #else
+            // Multiply by 2 cores to normalize the total load to 100%
+            //ulTotalRunTime = (ulTotalRunTime * 2) / 100UL; 
+            // I don't want it normalized over the 2 cores
+            ulTotalRunTime /= 100UL; 
+        #endif        
+
+        if (ulTotalRunTime > 0) {
+            printf("%-16s | %-12s | %s\n", "Task Name", "Abs Time", "% Time");
+            printf("-----------------|--------------|--------\n");
+            
+            for (UBaseType_t x = 0; x < uxArraySize; x++) {
+                uint32_t ulStatsAsPercentage = pxTaskStatusArray[x].ulRunTimeCounter / ulTotalRunTime;
+                
+                if (ulStatsAsPercentage > 0) {
+                    printf("%-16s | %-12lu | %lu%%\n",
+                           pxTaskStatusArray[x].pcTaskName,
+                           pxTaskStatusArray[x].ulRunTimeCounter,
+                           ulStatsAsPercentage);
+                } else {
+                    // Catch tasks that take less than 1% of CPU
+                    printf("%-16s | %-12lu | <1%%\n",
+                           pxTaskStatusArray[x].pcTaskName,
+                           pxTaskStatusArray[x].ulRunTimeCounter);
+                }
+            }
+        } else {
+            printf("Total runtime is zero! The ESP_TIMER clock source is NOT running.\n");
+        }
+
+        // Free the array
+        free(pxTaskStatusArray);
+    } else {
+        printf("Failed to allocate memory for task status array.\n");
+    }
+}
+
 // ─────────────────────────────────────────────
 //  Heap monitor — logs free heap every 30s
 // ─────────────────────────────────────────────
 static void heap_monitor_task(void*) {
     for (;;) {
-        vTaskDelay(pdMS_TO_TICKS(10000));
-        ESP_LOGI("Heap", "Free internal: %lu  PSRAM: %lu  Min internal ever: %lu",
+        vTaskDelay(pdMS_TO_TICKS(30000));
+        ESP_LOGI("HeapMon", "Free internal: %lu  PSRAM: %lu  Min internal ever: %lu",
                  (unsigned long)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
                  (unsigned long)heap_caps_get_free_size(MALLOC_CAP_SPIRAM),
                  (unsigned long)heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
         // LVGL memory stats
         lv_mem_monitor_t mon;
         lv_mem_monitor(&mon);
-        ESP_LOGI("LVGL", "Total: %u  Free: %u  Used: %u  Frag: %u%%",
+        ESP_LOGI("HeapMon", "LVGL Mem Total: %u  Free: %u  Used: %u  Frag: %u%%",
                  (unsigned)mon.total_size,
                  (unsigned)mon.free_size,
                  (unsigned)mon.used_cnt,
                  (unsigned)mon.frag_pct);
+        
+        log_runtime_stats_safe();
     }
 }
 

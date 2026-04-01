@@ -34,6 +34,11 @@ CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR=y
 # ─── FreeRTOS ────────────────────────────────────────────────
 CONFIG_FREERTOS_HZ=1000
 CONFIG_FREERTOS_UNICORE=n
+# Enable task runtime stats in freertos
+CONFIG_FREERTOS_USE_TRACE_FACILITY=y
+CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+CONFIG_FREERTOS_USE_STATS_FORMATTING_FUNCTIONS=y
+CONFIG_FREERTOS_RUN_TIME_STATS_USING_ESP_TIMER=y
 
 # ─── Networking ──────────────────────────────────────────────
 CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=10
@@ -70,3 +75,4 @@ CONFIG_BSP_DISPLAY_LVGL_TASK_CORE_ID=1
 # 96KB needed — 64KB causes fragmentation with current widget count
 # If adding more pages/widgets, increase this value
 CONFIG_LV_MEM_SIZE_KILOBYTES=96
+

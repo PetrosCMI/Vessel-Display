@@ -83,7 +83,7 @@ static void draw_canvas(void) {
     }
 
     float radius = gSettings.anchor_radius_m;
-    float scale  = (CANVAS_H / 2.0f) / (radius * 1.0f);
+    float scale  = (CANVAS_H / 2.0f) / (radius * 1.2f);
                                         //       ^^ adjust this inversely for size of circles on display
     int   cx     = CANVAS_W / 2;
     int   cy     = CANVAS_H / 2;
