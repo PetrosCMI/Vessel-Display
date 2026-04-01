@@ -70,7 +70,7 @@ static BankCard make_bank_card(lv_obj_t* parent,
                                 bool has_current,
                                 int x, int y, int w, int h) {
     BankCard bc = {};
-    ESP_LOGI( "ELEC", "Making bank card %s", name );
+    ESP_LOGD( "ELEC", "Making bank card %s", name );
 
     lv_obj_t* card = lv_obj_create(parent);
     lv_obj_add_style(card, &g_style_card, 0);
@@ -189,11 +189,9 @@ static void update(void) {
     lv_label_set_text(s_fwd.a_lbl, buf);
     lv_obj_set_style_text_color(s_fwd.a_lbl, current_colour(d.forward_a), 0);
 
-    #if 1
     fmt_soc(d.forward_soc, buf, sizeof(buf));
     lv_label_set_text(s_fwd.soc_lbl, buf);
     lv_obj_set_style_text_color(s_fwd.soc_lbl, soc_colour(d.forward_soc), 0);
-    #endif
 }
 
 static struct ElecReg {

@@ -83,7 +83,8 @@ static void draw_canvas(void) {
     }
 
     float radius = gSettings.anchor_radius_m;
-    float scale  = (CANVAS_H / 2.0f) / (radius * 2.5f);
+    float scale  = (CANVAS_H / 2.0f) / (radius * 1.0f);
+                                        //       ^^ adjust this inversely for size of circles on display
     int   cx     = CANVAS_W / 2;
     int   cy     = CANVAS_H / 2;
     int   r_px   = (int)(radius * scale);
@@ -324,7 +325,7 @@ static void update(void) {
         float dist = haversine_m(d.anchor_lat, d.anchor_lon, d.lat, d.lon);
         float bear = bearing_deg(d.anchor_lat, d.anchor_lon, d.lat, d.lon);
 
-        ESP_LOGI("Anchor", "Anchor: %.6f,%.6f  Current: %.6f,%.6f  Dist: %.2fm",
+        ESP_LOGD("Anchor", "Anchor: %.6f,%.6f  Current: %.6f,%.6f  Dist: %.2fm",
             d.anchor_lat, d.anchor_lon, d.lat, d.lon, dist);
 
         if (xSemaphoreTake(gBoatMutex, pdMS_TO_TICKS(5)) == pdTRUE) {
