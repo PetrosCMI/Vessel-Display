@@ -86,12 +86,12 @@ static void timeout_task(void*) {
                  s_state);
 
         if (s_state == STATE_AWAKE && idle_ms >= dim_ms) {
-            ESP_LOGD(TAG, "Display dimming after %d min",
+            ESP_LOGI(TAG, "Display dimming after %d min",
                      gSettings.display_timeout_minutes);
             set_brightness(DIM_BRIGHTNESS);
             s_state = STATE_DIMMED;
         } else if (s_state == STATE_DIMMED && idle_ms >= off_ms) {
-            ESP_LOGD(TAG, "Display off");
+            ESP_LOGI(TAG, "Display off");
             set_brightness(0);
             s_state = STATE_OFF;
         }

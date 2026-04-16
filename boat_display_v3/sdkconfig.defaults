@@ -31,6 +31,7 @@ CONFIG_BSP_DISPLAY_LVGL_PSRAM=y
 # Avoid tearing with double-buffer
 CONFIG_BSP_DISPLAY_LVGL_AVOID_TEAR=y
 
+
 # ─── FreeRTOS ────────────────────────────────────────────────
 CONFIG_FREERTOS_HZ=1000
 CONFIG_FREERTOS_UNICORE=n

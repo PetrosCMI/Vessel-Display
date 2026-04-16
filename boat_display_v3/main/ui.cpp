@@ -245,6 +245,7 @@ void ui_alarm_wake(const char* page_label) {
 
 void ui_update(void) {
     static uint32_t last_update_ms = 0;
+    ESP_LOGD(TAG, "ui_update last_update: %lu", last_update_ms);
 
     update_status_bar();
     alarm_overlay_update();

@@ -284,7 +284,7 @@ static void heap_monitor_task(void*) {
                  (unsigned)mon.used_cnt,
                  (unsigned)mon.frag_pct);
         
-        log_runtime_stats_safe();
+        // log_runtime_stats_safe();
     }
 }
 
@@ -292,7 +292,25 @@ static void heap_monitor_task(void*) {
 //  Alarm tick task
 // ─────────────────────────────────────────────
 static void alarm_tick_task(void*) {
-    for (;;) { alarm_tick(); vTaskDelay(pdMS_TO_TICKS(1000)); }
+    for (;;) {
+        alarm_tick();
+
+        // Reboot if no SignalK data for N minutes
+        #define SK_WATCHDOG_MINUTES  10
+        BoatData d = boatDataSnapshot();
+        if (d.signalk_connected && d.last_update_ms > 0) {
+            uint32_t age_ms = xTaskGetTickCount() * portTICK_PERIOD_MS
+                              - d.last_update_ms;
+            if (age_ms > (SK_WATCHDOG_MINUTES * 60 * 1000UL)) {
+                ESP_LOGW("WDT", "No SignalK data for %d min — rebooting",
+                         SK_WATCHDOG_MINUTES);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                esp_restart();
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 
 // ---------------------------------------------
@@ -312,10 +330,13 @@ extern "C" void app_main(void) {
     disp_cfg.buffer_size              = BSP_LCD_H_RES * CONFIG_BSP_DISPLAY_LVGL_BUF_HEIGHT;
     disp_cfg.double_buffer            = BSP_LCD_DRAW_BUFF_DOUBLE;
     disp_cfg.flags.buff_spiram        = true;
+
     lv_display_t* disp = bsp_display_start_with_config(&disp_cfg);
 
     if (!disp) { ESP_LOGE(TAG, "Display init failed"); return; }
+
     bsp_display_brightness_set(gSettings.brightness_pct);
+    // lv_display_set_rotation(disp, LV_DISPLAY_ROTATION_90);
 
     esp_codec_dev_handle_t spk = NULL;
     if (bsp_audio_init(NULL) == ESP_OK) {

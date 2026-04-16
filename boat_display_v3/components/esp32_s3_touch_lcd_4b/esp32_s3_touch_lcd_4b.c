@@ -360,13 +360,27 @@ esp_err_t bsp_display_brightness_set(int brightness_percent)
         brightness_percent = 0;
     }
 
+    #if 1
+    // 1. Manage the LCD Pixel Matrix State
+    if (panel_handle != NULL) {
+        if (brightness_percent == 0) {
+            ESP_LOGI(TAG, "Matrix Sleep: Shutting down LCD IC");
+            esp_lcd_panel_disp_on_off(panel_handle, false);
+        } else {
+            // Ensure the matrix wakes up when brightness goes above 0
+            esp_lcd_panel_disp_on_off(panel_handle, true);
+        }
+    }
+    #endif
     int flipped_brightness = 100 - brightness_percent;
 
     brightness = (uint8_t)flipped_brightness;
 
     ESP_LOGI(TAG, "Setting flipped LCD backlight: %d%% (original: %d%%)", flipped_brightness, brightness_percent);
     
-    uint32_t duty_cycle = (1023 * flipped_brightness) / 100;
+    // LEDC_TIMER_10_BIT = 1024
+    uint32_t duty_cycle = ((1024-1) * flipped_brightness) / 100;
+    ESP_LOGI(TAG, "Setting LCD duty cycle: %d%%, brightness: %d%%", duty_cycle) ;
     BSP_ERROR_CHECK_RETURN_ERR(ledc_set_duty(LEDC_LOW_SPEED_MODE, LCD_LEDC_CH, duty_cycle));
     BSP_ERROR_CHECK_RETURN_ERR(ledc_update_duty(LEDC_LOW_SPEED_MODE, LCD_LEDC_CH));
 
@@ -640,7 +654,6 @@ lv_display_t *bsp_display_start_with_config(const bsp_display_cfg_t *cfg)
     BSP_NULL_CHECK(disp = bsp_display_lcd_init(), NULL);
 
     BSP_NULL_CHECK(disp_indev = bsp_display_indev_init(disp), NULL);
-
     return disp;
 }
 
@@ -652,6 +665,39 @@ lv_indev_t *bsp_display_get_input_dev(void)
 void bsp_display_rotate(lv_display_t *disp, lv_display_rotation_t rotation)
 {
     lv_disp_set_rotation(disp, rotation);
+}
+void bsp_display_rotate_test(lv_display_t *disp, lv_display_rotation_t rotation)
+{
+    switch (rotation) {
+        case LV_DISPLAY_ROTATION_0:
+            esp_lcd_panel_swap_xy(panel_handle, false);
+            esp_lcd_panel_mirror(panel_handle, false, false);
+            esp_lcd_touch_set_swap_xy(tp, false);
+            esp_lcd_touch_set_mirror_x(tp, false);
+            esp_lcd_touch_set_mirror_y(tp, false);
+            break;
+        case LV_DISPLAY_ROTATION_90:
+            esp_lcd_panel_swap_xy(panel_handle, true);
+            esp_lcd_panel_mirror(panel_handle, false, true);
+            esp_lcd_touch_set_swap_xy(tp, true);
+            esp_lcd_touch_set_mirror_x(tp, false);
+            esp_lcd_touch_set_mirror_y(tp, true);
+            break;
+        case LV_DISPLAY_ROTATION_180:
+            esp_lcd_panel_swap_xy(panel_handle, false);
+            esp_lcd_panel_mirror(panel_handle, true, true);
+            esp_lcd_touch_set_swap_xy(tp, false);
+            esp_lcd_touch_set_mirror_x(tp, true);
+            esp_lcd_touch_set_mirror_y(tp, true);
+            break;
+        case LV_DISPLAY_ROTATION_270:
+            esp_lcd_panel_swap_xy(panel_handle, true);
+            esp_lcd_panel_mirror(panel_handle, true, false);
+            esp_lcd_touch_set_swap_xy(tp, true);
+            esp_lcd_touch_set_mirror_x(tp, true);
+            esp_lcd_touch_set_mirror_y(tp, false);
+            break;
+    }
 }
 
 bool bsp_display_lock(uint32_t timeout_ms)

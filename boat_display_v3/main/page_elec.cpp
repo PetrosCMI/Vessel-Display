@@ -23,13 +23,13 @@ static BankCard s_house, s_li, s_start, s_fwd;
 
 static void fmt_v(float v, char* buf, size_t n) {
     if (isnan(v)) snprintf(buf, n, "---");
-    else          snprintf(buf, n, "%.1f V", v);
+    else          snprintf(buf, n, "%.2f V", v);
 }
 
 // ── Helper: format current (+ = charging, - = discharging) ───
 static void fmt_a(float a, char* buf, size_t n) {
     if (isnan(a)) snprintf(buf, n, "--- A");
-    else          snprintf(buf, n, "%+.1f A", a);
+    else          snprintf(buf, n, "%+.2f A", a);
 }
 
 // ── Helper: format SOC ───────────────────────────────────────
