@@ -113,11 +113,11 @@ static void update_status_bar(void) {
     BoatData d = boatDataSnapshot();
 
     lv_obj_set_style_text_color(sb_wifi_icon,
-        d.signalk_connected ? C_GREEN : C_RED, 0);
+        d.mqtt_connected ? C_GREEN : C_RED, 0);
     lv_label_set_text(sb_conn_lbl,
-        d.signalk_connected ? "SignalK" : "Disconnected");
+        d.mqtt_connected ? "SignalK" : "Disconnected");
 
-    if (d.signalk_connected && d.last_update_ms > 0) {
+    if (d.mqtt_connected && d.last_update_ms > 0) {
         char buf[20];
         uint32_t age = (xTaskGetTickCount() * portTICK_PERIOD_MS
                         - d.last_update_ms) / 1000;

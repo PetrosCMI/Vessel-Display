@@ -70,7 +70,7 @@ static void build(lv_obj_t* tab) {
     lv_obj_set_pos(s_ip_lbl, 0, 46);
     y += 110;
 
-    // ── SignalK status card ───────────────────────────────────
+    // ── MQTT Broker status card ───────────────────────────────────
     lv_obj_t* scard = lv_obj_create(tab);
     lv_obj_add_style(scard, &g_style_card, 0);
     lv_obj_set_size(scard, 454, 100);
@@ -78,7 +78,7 @@ static void build(lv_obj_t* tab) {
     lv_obj_set_scrollbar_mode(scard, LV_SCROLLBAR_MODE_OFF);
 
     lv_obj_t* st = lv_label_create(scard);
-    lv_label_set_text(st, "SIGNALK");
+    lv_label_set_text(st, "MQTT BROKER");
     lv_obj_add_style(st, &g_style_label, 0);
     lv_obj_set_pos(st, 0, 0);
 
@@ -91,7 +91,7 @@ static void build(lv_obj_t* tab) {
     s_sk_host_lbl = lv_label_create(scard);
     char skbuf[80];
     snprintf(skbuf, sizeof(skbuf), "%s:%d",
-             gSettings.signalk_host, gSettings.signalk_port);
+             gSettings.mqtt_host, gSettings.mqtt_port);
     lv_label_set_text(s_sk_host_lbl, skbuf);
     lv_obj_add_style(s_sk_host_lbl, &g_style_label, 0);
     lv_obj_set_pos(s_sk_host_lbl, 0, 46);
@@ -221,9 +221,9 @@ static void update(void) {
         }
     }
 
-    // SignalK status
+    // MQTT broker status
     BoatData d = boatDataSnapshot();
-    if (d.signalk_connected) {
+    if (d.mqtt_connected) {
         lv_label_set_text(s_sk_status_lbl, "Connected");
         lv_obj_set_style_text_color(s_sk_status_lbl, C_GREEN, 0);
     } else {
@@ -231,10 +231,10 @@ static void update(void) {
         lv_obj_set_style_text_color(s_sk_status_lbl, C_RED, 0);
     }
 
-    // Update SignalK host label in case it changed
+    // Update MQTT host label in case it changed
     char skbuf[80];
     snprintf(skbuf, sizeof(skbuf), "%s:%d",
-             gSettings.signalk_host, gSettings.signalk_port);
+             gSettings.mqtt_host, gSettings.mqtt_port);
     lv_label_set_text(s_sk_host_lbl, skbuf);
 
     // Uptime

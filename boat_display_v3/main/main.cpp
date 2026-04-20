@@ -15,6 +15,7 @@
 #include "config.h"
 #include "boat_data.h"
 #include "settings.h"
+#include "mqtt_client.h"
 #include "signalk.h"
 #include "alarm.h"
 #include "wifi_config.h"
@@ -197,12 +198,12 @@ static bool wifi_init(void) {
 // ---------------------------------------------
 void network_reconnect(void) {
     ESP_LOGI(TAG, "Network reconnect requested");
-    signalk_stop();
+    mqtt_stop();
     esp_wifi_disconnect();
     vTaskDelay(pdMS_TO_TICKS(500));
     if (wifi_connect_with_settings()) {
         vTaskDelay(pdMS_TO_TICKS(500));
-        signalk_start();
+        mqtt_start();
     }
 }
 
@@ -295,10 +296,10 @@ static void alarm_tick_task(void*) {
     for (;;) {
         alarm_tick();
 
-        // Reboot if no SignalK data for N minutes
+        // Reboot if no MQTT data for N minutes
         #define SK_WATCHDOG_MINUTES  10
         BoatData d = boatDataSnapshot();
-        if (d.signalk_connected && d.last_update_ms > 0) {
+        if (d.mqtt_connected && d.last_update_ms > 0) {
             uint32_t age_ms = xTaskGetTickCount() * portTICK_PERIOD_MS
                               - d.last_update_ms;
             if (age_ms > (SK_WATCHDOG_MINUTES * 60 * 1000UL)) {
@@ -354,7 +355,7 @@ extern "C" void app_main(void) {
 
     wifi_init();
     page_network_check_autostart();
-    signalk_start();
+    mqtt_start();
 
     xTaskCreate(alarm_tick_task, "alarm_tick", 4096, NULL, 3, NULL);
     alarm_beep(AlarmPattern::BEEP_DOUBLE);

@@ -74,6 +74,7 @@ struct BoatData {
     // Meta
     uint32_t last_update_ms    = 0;
     bool     signalk_connected = false;
+    bool     mqtt_connected    = false;
 };
 
 extern BoatData          gBoat;

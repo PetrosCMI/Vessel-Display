@@ -272,6 +272,29 @@ void alarm_tick(void) {
         s_prev_storm = sl;
     }
 
+    // Data timeout alarm — no MQTT data for 5 minutes
+    if (gSettings.alarm_enabled[ALARM_DATA_TIMEOUT]) {
+        if (d.mqtt_connected && d.last_update_ms > 0) {
+            uint32_t age_ms = xTaskGetTickCount() * portTICK_PERIOD_MS - d.last_update_ms;
+            const uint32_t TIMEOUT_MS = 5 * 60 * 1000;  // 5 minutes
+            
+            if (age_ms > TIMEOUT_MS) {
+                s_active[ALARM_DATA_TIMEOUT] = true;
+                ESP_LOGW(TAG, "Data timeout: no updates for %lu seconds", age_ms / 1000);
+            } else {
+                if (s_active[ALARM_DATA_TIMEOUT]) {
+                    s_acked[ALARM_DATA_TIMEOUT] = false;
+                    ESP_LOGI(TAG, "Data timeout cleared");
+                }
+                s_active[ALARM_DATA_TIMEOUT] = false;
+            }
+        } else {
+            s_active[ALARM_DATA_TIMEOUT] = false;
+        }
+    } else {
+        s_active[ALARM_DATA_TIMEOUT] = false;
+    }
+
     s_any_active  = false;
     s_any_unacked = false;
 

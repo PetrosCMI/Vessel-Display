@@ -4,6 +4,7 @@ idf_component_register(
         "boat_data.cpp"
         "settings.cpp"
         "signalk.cpp"
+        "mqtt_client.cpp"
         "alarm.cpp"
         "ui.cpp"
         "ui_helpers.cpp"

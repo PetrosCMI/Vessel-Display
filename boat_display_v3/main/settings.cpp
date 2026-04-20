@@ -5,7 +5,7 @@
 
 static const char* TAG = "Settings";
 static const char* NVS_NS = "boatdisp";
-static const uint8_t SCHEMA_VER = 6;   // bumped ΓÇö storm alarm added
+static const uint8_t SCHEMA_VER = 7;   // bumped — data timeout alarm added
 
 Settings gSettings;
 
@@ -18,6 +18,7 @@ const AlarmDef ALARM_TABLE[ALARM_COUNT] = {
     { ALARM_BATT_FORWARD,   "Fwd Battery",    12.0f, NAN   },
     { ALARM_ANCHOR_DRAG,    "Anchor Drag",    NAN,   NAN   },
     { ALARM_STORM,          "Storm Warning",  NAN,   NAN   },
+    { ALARM_DATA_TIMEOUT,   "Data Timeout",   NAN,   NAN   },
 };
 
 void settings_init() {
@@ -80,12 +81,22 @@ void settings_init() {
     sz = sizeof(gSettings.wifi);
     nvs_get_blob(h, "wifi_nets", &gSettings.wifi, &sz);
 
-    // SignalK
+    uint32_t port32;
+    // SignalK (legacy)
+    #if USE_SIGNALK
     sz = sizeof(gSettings.signalk_host);
     nvs_get_str(h, "sk_host", gSettings.signalk_host, &sz);
     uint32_t port32 = 3000;
     if (nvs_get_u32(h, "sk_port", &port32) == ESP_OK)
         gSettings.signalk_port = (uint16_t)port32;
+    #endif
+
+    // MQTT broker
+    sz = sizeof(gSettings.mqtt_host);
+    nvs_get_str(h, "mqtt_host", gSettings.mqtt_host, &sz);
+    port32 = 1883;
+    if (nvs_get_u32(h, "mqtt_port", &port32) == ESP_OK)
+        gSettings.mqtt_port = (uint16_t)port32;
 
     nvs_close(h);
     ESP_LOGI(TAG, "Loaded from NVS (schema v%d)", SCHEMA_VER);
@@ -111,8 +122,12 @@ void settings_save() {
     nvs_set_u32(h,  "batt_low_mv", (uint32_t)(gSettings.battery_low_v * 1000.0f));
     nvs_set_u32(h,  "anchor_r_m",  (uint32_t)gSettings.anchor_radius_m);
     nvs_set_blob(h, "wifi_nets", &gSettings.wifi,         sizeof(gSettings.wifi));
+    #if USE_SIGNALK
     nvs_set_str(h,  "sk_host",   gSettings.signalk_host);
     nvs_set_u32(h,  "sk_port",   (uint32_t)gSettings.signalk_port);
+    #endif
+    nvs_set_str(h,  "mqtt_host", gSettings.mqtt_host);
+    nvs_set_u32(h,  "mqtt_port", (uint32_t)gSettings.mqtt_port);
 
     nvs_commit(h);
     nvs_close(h);

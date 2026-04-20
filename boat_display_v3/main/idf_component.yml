@@ -3,7 +3,8 @@ dependencies:
   
   # The BSP in /components handles LVGL, LCD, and Touch.
   # These are your application-specific needs:
-  espressif/esp_websocket_client: "^1.2.0"
+  espressif/esp_websocket_client: "^1.2.0"  # legacy - kept for compatibility
+  ### espressif/esp-mqtt: "^2.0.0"
   
   # Explicitly allow the beta version of the C++ components
   espressif/esp-idf-cxx: 

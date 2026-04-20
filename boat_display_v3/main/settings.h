@@ -17,6 +17,7 @@ enum AlarmID : uint8_t {
     ALARM_BATT_FORWARD,
     ALARM_ANCHOR_DRAG,
     ALARM_STORM,
+    ALARM_DATA_TIMEOUT,    // No MQTT data for 5 minutes
     ALARM_COUNT
 };
 
@@ -49,6 +50,11 @@ struct WifiNetwork {
 #define SIGNALK_PORT_MIN  1
 #define SIGNALK_PORT_MAX  65535
 
+//  MQTT connection
+#define MQTT_HOST_LEN  64
+#define MQTT_PORT_MIN  1
+#define MQTT_PORT_MAX  65535
+
 // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
 //  Master settings struct
 // ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
@@ -59,10 +65,10 @@ struct Settings {
     TempUnit   temp_unit   = TempUnit::CELSIUS;
     PressUnit  press_unit  = PressUnit::KPA;
 
-    // Alarms ΓÇö depth, wind, 3├ù battery low, anchor drag
-    bool  alarm_enabled[ALARM_COUNT] = { true,  false, true,  true,  true,  true,  false, true  };
-    float alarm_lo[ALARM_COUNT]      = { 3.0f,  NAN,   NAN,   12.0f, 12.0f, 12.0f, NAN,   NAN  };
-    float alarm_hi[ALARM_COUNT]      = { NAN,   20.0f, 15.4f, NAN,   NAN,   NAN,   NAN,   NAN  };
+    // Alarms — depth, wind, 3× battery low, anchor drag, storm, data timeout
+    bool  alarm_enabled[ALARM_COUNT] = { true,  false, true,  true,  true,  true,  false, true,  true  };
+    float alarm_lo[ALARM_COUNT]      = { 3.0f,  NAN,   NAN,   12.0f, 12.0f, 12.0f, NAN,   NAN,   NAN  };
+    float alarm_hi[ALARM_COUNT]      = { NAN,   20.0f, 15.4f, NAN,   NAN,   NAN,   NAN,   NAN,   NAN  };
 
     // Shared battery low voltage threshold
     float battery_low_v = 12.0f;
@@ -80,9 +86,13 @@ struct Settings {
     // WiFi networks ΓÇö index 0 = highest priority
     WifiNetwork wifi[WIFI_MAX_NETWORKS];
 
-    // SignalK
-    char signalk_host[SIGNALK_HOST_LEN] = "192.168.1.100";
-    uint16_t signalk_port               = 3000;
+    // SignalK (legacy - kept for compatibility)
+    //char signalk_host[SIGNALK_HOST_LEN] = "192.168.1.100";
+    //uint16_t signalk_port               = 3000;
+    
+    // MQTT broker
+    char mqtt_host[SIGNALK_HOST_LEN] = "192.168.1.100";
+    uint16_t mqtt_port               = 1883;
 };
 
 extern Settings gSettings;

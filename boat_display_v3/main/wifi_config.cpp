@@ -62,7 +62,7 @@ static const char HTML_PAGE[] =
 "<label>SSID</label><input name='s4' maxlength='32' value='{{S4}}'>"
 "<label style='margin-top:8px'>Password</label>"
 "<input name='p4' maxlength='64' value='{{P4}}'></div>"
-"<h2>SignalK Server</h2>"
+"<h2>MQTT Server</h2>"
 "<div class='card'>"
 "<label>Host / IP address</label>"
 "<input name='skh' maxlength='63' value='{{SKH}}'>"
@@ -146,9 +146,9 @@ static char* build_html(void) {
             else if (strcmp(token, "P2") == 0) val = gSettings.wifi[2].pass;
             else if (strcmp(token, "P3") == 0) val = gSettings.wifi[3].pass;
             else if (strcmp(token, "P4") == 0) val = gSettings.wifi[4].pass;
-            else if (strcmp(token, "SKH") == 0) val = gSettings.signalk_host;
+            else if (strcmp(token, "SKH") == 0) val = gSettings.mqtt_host;
             else if (strcmp(token, "SKP") == 0) {
-                snprintf(portbuf, sizeof(portbuf), "%d", gSettings.signalk_port);
+                snprintf(portbuf, sizeof(portbuf), "%d", gSettings.mqtt_port);
                 val = portbuf;
             }
 
@@ -209,6 +209,7 @@ static esp_err_t handle_save(httpd_req_t* req) {
         gSettings.wifi[i].enabled = (gSettings.wifi[i].ssid[0] != '\0');
     }
 
+    #if USE_SIGNALK
     // Parse SignalK
     get_field(body, "skh", tmp, SIGNALK_HOST_LEN);
     if (tmp[0]) strncpy(gSettings.signalk_host, tmp, SIGNALK_HOST_LEN - 1);
@@ -216,6 +217,15 @@ static esp_err_t handle_save(httpd_req_t* req) {
     get_field(body, "skp", tmp, 8);
     int port = atoi(tmp);
     if (port >= 1 && port <= 65535) gSettings.signalk_port = (uint16_t)port;
+    #endif
+
+    // Parse MQTT
+    get_field(body, "skh", tmp, MQTT_HOST_LEN);
+    if (tmp[0]) strncpy(gSettings.mqtt_host, tmp, MQTT_HOST_LEN - 1);
+
+    get_field(body, "skp", tmp, 8);
+    int port = atoi(tmp);
+    if (port >= 1 && port <= 65535) gSettings.mqtt_port = (uint16_t)port;
 
     settings_save();
 
