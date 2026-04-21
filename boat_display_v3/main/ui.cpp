@@ -115,7 +115,7 @@ static void update_status_bar(void) {
     lv_obj_set_style_text_color(sb_wifi_icon,
         d.mqtt_connected ? C_GREEN : C_RED, 0);
     lv_label_set_text(sb_conn_lbl,
-        d.mqtt_connected ? "SignalK" : "Disconnected");
+        d.mqtt_connected ? "MQTT" : "Disconnected");
 
     if (d.mqtt_connected && d.last_update_ms > 0) {
         char buf[20];
@@ -252,7 +252,7 @@ void ui_update(void) {
 
     BoatData d = boatDataSnapshot();
     
-    // Always update NET page (index 0) regardless of SignalK data
+    // Always update NET page (index 0) regardless of MQTT data
     const std::vector<Page>& pages = ui_get_pages();
     if (!pages.empty()) {
         pages[6].update_fn();  // NET page is first

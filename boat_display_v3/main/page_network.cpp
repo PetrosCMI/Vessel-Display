@@ -116,9 +116,9 @@ static void build(lv_obj_t* tab) {
 
     s_config_instr_lbl = lv_label_create(s_config_card);
     lv_label_set_text(s_config_instr_lbl,
-        "Connect phone to:\n"
+        "Connect device to:  "
         LV_SYMBOL_WIFI "  BoatDisplay\n"
-        "Then open:  192.168.4.1");
+        "Then browse to: http://192.168.4.1");
     lv_obj_set_style_text_color(s_config_instr_lbl, C_ACCENT, 0);
     lv_obj_set_style_text_font(s_config_instr_lbl, &lv_font_montserrat_16, 0);
     lv_obj_set_pos(s_config_instr_lbl, 0, 22);
@@ -126,8 +126,8 @@ static void build(lv_obj_t* tab) {
 
     // Start config button
     s_btn_config = lv_btn_create(s_config_card);
-    lv_obj_set_size(s_btn_config, 200, 60);
-    lv_obj_set_pos(s_btn_config, 0, 40);
+    lv_obj_set_size(s_btn_config, 200, 40);
+    lv_obj_set_pos(s_btn_config, 0, 85);
     lv_obj_set_style_bg_color(s_btn_config, C_ACCENT, 0);
     lv_obj_t* bcl = lv_label_create(s_btn_config);
     lv_label_set_text(bcl, LV_SYMBOL_WIFI "  Start Config");
@@ -140,8 +140,8 @@ static void build(lv_obj_t* tab) {
 
     // Stop config button (hidden until config active)
     s_btn_stop = lv_btn_create(s_config_card);
-    lv_obj_set_size(s_btn_stop, 200, 60);
-    lv_obj_set_pos(s_btn_stop, 0, 40);
+    lv_obj_set_size(s_btn_stop, 200, 40);
+    lv_obj_set_pos(s_btn_stop, 0, 85);
     lv_obj_set_style_bg_color(s_btn_stop, lv_color_hex(0x401010), 0);
     lv_obj_t* bsl = lv_label_create(s_btn_stop);
     lv_label_set_text(bsl, LV_SYMBOL_CLOSE "  Stop Config");
@@ -153,8 +153,8 @@ static void build(lv_obj_t* tab) {
 
     // Restart button
     lv_obj_t* rst_btn = lv_btn_create(s_config_card);
-    lv_obj_set_size(rst_btn, 200, 60);
-    lv_obj_set_pos(rst_btn, 210, 40);
+    lv_obj_set_size(rst_btn, 200, 40);
+    lv_obj_set_pos(rst_btn, 210, 85);
     lv_obj_set_style_bg_color(rst_btn, lv_color_hex(0x303040), 0);
     lv_obj_t* rbl = lv_label_create(rst_btn);
     lv_label_set_text(rbl, LV_SYMBOL_REFRESH "  Restart");
@@ -184,9 +184,11 @@ static void update(void) {
 
     // WiFi status
     if (config_active) {
-        lv_label_set_text(s_wifi_status_lbl, "Config AP: BoatDisplay");
-        lv_obj_set_style_text_color(s_wifi_status_lbl, C_YELLOW, 0);
-        lv_label_set_text(s_ip_lbl, "192.168.4.1");
+        // Showing the BoatDisplay AP is redundant here.  
+        // Leave the connected IP visible
+        //lv_label_set_text(s_wifi_status_lbl, "Config AP: BoatDisplay");
+        //lv_obj_set_style_text_color(s_wifi_status_lbl, C_YELLOW, 0);
+        //lv_label_set_text(s_ip_lbl, "192.168.4.1");
     } else {
         // Get IP first - if we have an IP, we're connected
         esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
