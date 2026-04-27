@@ -176,6 +176,31 @@ static void update(void) {
         lv_obj_clear_flag(s_config_instr_lbl, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(s_btn_config,          LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_btn_stop,          LV_OBJ_FLAG_HIDDEN);
+
+        // Show current IP if WiFi is connected, otherwise show default AP IP
+        char instr[128];
+        esp_netif_t* netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+        esp_netif_ip_info_t ip_info;
+        bool has_ip = false;
+
+        if (netif && esp_netif_get_ip_info(netif, &ip_info) == ESP_OK) {
+            if (ip_info.ip.addr != 0) {
+                has_ip = true;
+                char ipbuf[20];
+                esp_ip4addr_ntoa(&ip_info.ip, ipbuf, sizeof(ipbuf));
+                snprintf(instr, sizeof(instr),
+                    "Then browse to: http://%s",
+                    ipbuf);
+            }
+        }
+
+        if (!has_ip) {
+            snprintf(instr, sizeof(instr),
+                "Connect device to:  " LV_SYMBOL_WIFI "  %s\n"
+                "Then browse to: http://%s",
+                CONFIG_AP_SSID, CONFIG_AP_IP);
+        }
+        lv_label_set_text(s_config_instr_lbl, instr);
     } else {
         lv_obj_add_flag(s_config_instr_lbl,    LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(s_btn_config,        LV_OBJ_FLAG_HIDDEN);
